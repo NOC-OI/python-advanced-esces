@@ -57,18 +57,12 @@ Possible things to include:
 
 ## Lesson design
 
-Dataset
-
-A time series 2D or 3D geospatial dataset with at least one parameter.
-For example sea surface temperature or air temperature at 1 or 1/4 degree resolution?
-In NetCDF format + Zarr formats 
-Subset of it as a set of images for the GNU parallel exercises (possibly numpy/numba too)
-Ideally we want a few GB of data, need to host it somewhere or stick it on a shared filesystem if everyone uses the same HPC
-
-### things not covered that might need to be:
-* Something more biology friendly, some ecological observation data? Perhaps in the geospatial visualisation section?
-* Standard python advanced topics, lambdas, generators, OOP (can probably sneak lambdas in, in a few places)
-* Using Pandas dataframes, we jump straight to Xarray, is this a problem?
+### Dataset Selection
+* A time series 2D or 3D geospatial dataset with at least one parameter.
+* For example sea surface temperature or air temperature at 1 or 1/4 degree resolution?
+* In NetCDF format + Zarr formats 
+* Subset of it as a set of images for the GNU parallel exercises (possibly numpy/numba too)
+* Ideally we want at least a few GB of data, need to host it somewhere or stick it on a shared filesystem if everyone uses the same HPC
 
 ### Introduction (10 minutes teaching, 20 minutes exercises)
 * What are the common challenges of working with big data? Too big for memory, takes too long to process in serial, difficult to store/access, dependent on lots of libraries.
@@ -124,8 +118,10 @@ Ideally we want a few GB of data, need to host it somewhere or stick it on a sha
 * Use GPUs with Numba
 * GPU accelerated libraries (cuDF for Pandas, cuPY for Numpy, cuML for scikit learn)
 
-
-
+### things not covered that might need to be:
+* Something more biology friendly, some ecological observation data? Perhaps in the geospatial visualisation section?
+* Standard python advanced topics, lambdas, generators, OOP (can probably sneak lambdas in, in a few places)
+* Using Pandas dataframes, we jump straight to Xarray, is this a problem?
 
 
 ## Technical tips and tricks
