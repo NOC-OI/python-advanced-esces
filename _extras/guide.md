@@ -92,6 +92,7 @@ Possible things to include:
 * Object stores, storing data in the cloud
 * Importance of chunking, file ordering
 * Parallel filesystem implications
+* Intake Catalogues
 
 ### Parallel Processing With Numpy and Numba (50 minutes teaching, 30 minutes exercises)
 * Profiling
