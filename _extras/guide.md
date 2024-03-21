@@ -78,8 +78,15 @@ Possible things to include:
 ### Working with data in Xarray (40 minutes teaching, 30 minutes exercises)
 * Explain about NetCDF
 * How to load data with Xarray
+* Indexing in Xarray
 * Lazy loading and evaluation
 * Applying operations to whole datasets
+  * Xarray computational operations (groupby, resample etc)
+  * Rolling windows
+  * Applying functions
+  * Broadcasting
+  * Interpolating data
+* Working with time series data
 * Visualising Xarray data
 
 ### Plotting Geospatial data with Cartopy (30 minutes teaching, 20 minutes exercises)
@@ -87,7 +94,7 @@ Possible things to include:
 * Adding grid lines, country outlines etc
 * Working with Xarray data
 
-### Storing and Accessing Data in Parallelism Friendly formats (20 minutes teaching, 30 minutes exercises)
+### Storing and Accessing Data in Parallelism Friendly formats (40 minutes teaching, 30 minutes exercises)
 * Zarr files and working with them in Xarray
 * Object stores, storing data in the cloud
 * Importance of chunking, file ordering
@@ -109,10 +116,6 @@ Possible things to include:
 * Delayed tasks
 * Futures
 
-### Parallelising Machine Learning with Dask (40 minutes teaching, 35 minutes exercises)
-* Scikit learn intro, how to use train and fit functions.
-* Train a classifier or estimator using Dask
-* Train with a dataset too big for RAM
 
 ### Using GPUs (35 minutes teaching, 25 minutes exercises)
 * Why use GPUs?
