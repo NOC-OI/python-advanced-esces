@@ -90,6 +90,7 @@ This is defined by a YAML file that is downloaded alongside the course materials
 > import cartopy
 > import intake
 > import zarr
+> import netCDF4
 > print("Xarray version:", xarray.__version__)
 > print("Dask version:", dask.__version__)
 > print("Numpy version:", numpy.__version__)
@@ -97,6 +98,7 @@ This is defined by a YAML file that is downloaded alongside the course materials
 > print("Cartopy version:", cartopy.__version__)
 > print("Intake version:", intake.__version__)
 > print("Zarr version:", zarr.__version__)
+> print("netCDF4 version:", netCDF4.__version__)
 > !parallel
 > ~~~
 > {: .python}
@@ -110,15 +112,16 @@ This is defined by a YAML file that is downloaded alongside the course materials
 > > Cartopy version: 0.22.0
 > > Intake version: 2.0.4
 > > Zarr version: 2.17.1
+> > netCDF4 version: 1.6.5
 > > GNU parallel 20230522
 > > Copyright (C) 2007-2023 Ole Tange, http://ole.tange.dk and Free Software
 > > Foundation, Inc.
 > > License GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>
 > > This is free software: you are free to change and redistribute it.
 > > GNU parallel comes with no warranty.
-> > 
+> >
 > > Web site: https://www.gnu.org/software/parallel
-> > 
+> >
 > > When using programs that use GNU Parallel to process data for publication
 > > please cite as described in 'parallel --citation'.
 > > ~~~
@@ -127,15 +130,102 @@ This is defined by a YAML file that is downloaded alongside the course materials
 
 ## About the example data
 
-### NetCDF recap
+There is a small example dataset included in the download above. This is a Surface Temperature Analysis from the [Goddard Institute for Space Studies at NASA](https://data.giss.nasa.gov/gistemp/). 
+It contains a monthly surface temperatures on a 2x2 degree grid from across the earth from 1880 to 2023. The data is stored in a NetCDF file. We will be using a subset of the data that runs from 2000 to 2023.
 
-### Zarr Data
+### About NetCDF files
 
-### Intake Catalogues
+NetCDF files are suited for storing array data
 
-> ## Testing you can open the data
-> `import xarray`
-> `xr.opendataset`
+They are:
+
+ - Self Describing, there is a metadata describing the whole dataset, the variables within it and their units.
+ - Widely supported, there are libraries to read netCDF in most programming languages and lots of tools to manipulate them.
+ - Python has a NetCDF4 library that can work with them, the Xarray library also works with NetCDF.
+ - Efficient, can store data in binary formats instead of ASCII data as CSV would.
+ - Able to contain multiple variables
+ - Contains three types of data:
+    - Variables: the actual data.
+    - Dimensions: the dimensions on which the variables exist, for example latitude, longitude and time.
+    - Attributes: Information about the dataset, for example who created it and when.
+
+### Exploring the GISS Temp Dataset
+
+#### Load and get an overview of the dataset
+
+~~~
+import netCDF4
+dataset = netCDF4.Dataset("gistemp1200-21c.nc")
+print(dataset)
+~~~
+{: .python}
+
+
+
+#### Get the list of attributes
+~~~
+dataset.ncattrs()
+['title', 'institution', 'source', 'Conventions', 'history']
+print(dataset.title)
+'GISTEMP Surface Temperature Analysis'
+~~~
+{: .python}
+
+#### Get the list of variables
+~~~
+print(dataset.variables)
+~~~
+{: .python}
+
+#### Get the list of dimensions
+~~~
+print(dataset.dimensions)
+~~~
+{: .python}
+
+
+#### Read some data from out dataset
+The dataset values can be read from `dataset.variables['variablename']`, it will have a subarray that contains the data following the dimensions specified. 
+In our dataset we can see that the tempanomaly variable has the shape `int16 tempanomaly(time, lat, lon)`. 
+This means that time will be the first index, latitude the second and longitude the third. We can get the first timestep for the upper left coordinate by using:
+~~~
+print(dataset.variables['tempanomaly'][0,0,0])
+~~~
+{: .python}
+One thing to note here is that our dataset's y coordinates are backwards to most maps (following a computer graphics convention where 0 is the upper left coordinate, not the lower left or centre). 
+Therefore requesting [0,0,0] means the southern most and western most coordinate at the first timestep.
+
+
+#### Read some NetCDF data
+> ## Challenge
+> There are 90 elements to the latitude dimension, one every two degrees and 180 in the longitude dimension, also with one every two degrees. 
+> To translate from a real latitude and longitude to an index we'll need to divide the longitude by two and add 90 to the longitude. 
+> For the latitude we'll need to flip the coordinate's sign by subtracting it from zero and then divide by two and add 45. 
+> In Python this can be expressed as the following, we'll also want to ensure the result is an integer by wrapping the whole calculation in int():
+> ~~~
+> latitude_index = int(((0 - latitude) / 2) + 45)
+> longitude_index = int((longitude / 2) + 90)
+> ~~~
+> {: .python}
+> For the time dimension, each element represents one month starting from January 2000, so for example element 12 will be January 2001 (0-11 are January to December 2000).
+> For example 54 degrees north (latitude) and 2 degrees west will translate to the array index 72, 46
+> Write some code to get the temperature anomaly for January 2020 in Oslo, Norway (approximately 60 North, 10 East)
+> > ## Solution
+> > ~~~
+> > latitude = 60
+> > longitude = 10
+> > latitude_index = int(((0 - latitude) / 2) + 45)
+> > longitude_index = int((longitude / 2) + 90)
+> > time_index = 20 * 12   #we want jan 2020, dataset starts at jan 2000 and has monthly entries 
+> > print(dataset.variables['tempanomaly'][time_index,latitude_index,longitude_index])
+> > ~~~
+> > {: .python}
+> > ~~~
+> > 0.39999998
+> > ~~~
+> > {: .output}
+> {: .solution}
 {: .challenge}
+
 
 {% include links.md %}
