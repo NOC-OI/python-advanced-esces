@@ -165,12 +165,19 @@ Seq     Host    Starttime       JobRuntime      Send    Receive Exitval Signal  
 > There is a script included with the example dataset called plot_tempanomaly.py. 
 > This script will plot a map of the temperature anomaly data from our GISS dataset. It takes three arguments, the name of the NetCDF file to use, a start year (specified with --start)
 > and an end year (specified with --end). It will create a PNG file for each month that it processes.
+>
 > For example to run this for the year 2000 we would run:
+>
 > `python plot_tempanomaly.py gistemp1200-21c.nc --start 2000 --end 2001`
+>
 > We can time how long a command takes by prefixing it with the `time` command, this will return three numbers:
+>
 > real: how long the whole command took to run
+>
 > user: how much time the command used the processor for in user mode, this is typically within our code and the libraries it calls.
+>
 > sys: how much time the command used the processor for in system mode, this typically means the time spent waiting for hardware devices to respond, for example the disk, screen or network.
+>
 > The sys and user time can exceed the real time when multiple processor cores are used.
 >
 > Run this for the years 2000 to 2023 as a serial job with the commands:
@@ -184,11 +191,12 @@ Seq     Host    Starttime       JobRuntime      Send    Receive Exitval Signal  
 > time parallel python plot_tempanomaly.py gistemp1200-21c.nc --start {1} --end {2} ::: $(seq 2000 2023) :::+ $(seq 2001 2024)
 > ~~~
 > {: .language-bash}
+>
 > Compare the runtimes of the parallel and serial versions.
 > Try adding the joblog option and examining how many jobs launched at once.
 > How many jobs did Parallel launch simultaneously? How much faster was the parallel version than the serial version?
 > Try adding the --max-procs option and setting this to 2,4 or 8 and compare the run time.
-> {: .solution}
+>
 {: .challenge}
 
 
