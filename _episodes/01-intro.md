@@ -19,8 +19,8 @@ keypoints:
 
 ## How do we scale Python to work with big data?
 
-* Datasets bigger than memory
-* Processing requirements beyond our own computers
+Python is an increasingly popular choice for working with big data. In enviromental sciences we often encounter data that is bigger
+than our computer's memory and/or that is too big to process with our desktop or laptop computers.
 
 > ## What are your needs?
 > 1. In the etherpad write a sentence about what kind of data you work with and how big that data is.
@@ -30,12 +30,15 @@ keypoints:
 
 ### The tools we'll look at in this lesson
 
+In this lesson we will look at a few tools to help you work with big data and to process your data more efficiently and by using parallel processing, these will include:
+
 * GNU Parallel
-* Numpy and Numba
+* Numpy
+* Numba
 * Xarray
 * Dask
 * Zarr
-
+* Intake
 
 ## Connecting to a JupyterLab/notebook service
 
@@ -193,7 +196,7 @@ print(dataset.variables['tempanomaly'][0,0,0])
 ~~~
 {: .language-python}
 One thing to note here is that our dataset's y coordinates are backwards to most maps (following a computer graphics convention where 0 is the upper left coordinate, not the lower left or centre). 
-Therefore requesting [0,0,0] means the southern most and western most coordinate at the first timestep.
+Therefore requesting `[0,0,0]` means the southern most and western most coordinate at the first timestep.
 
 
 #### Read some NetCDF data
@@ -201,7 +204,7 @@ Therefore requesting [0,0,0] means the southern most and western most coordinate
 > There are 90 elements to the latitude dimension, one every two degrees and 180 in the longitude dimension, also with one every two degrees. 
 > To translate from a real latitude and longitude to an index we'll need to divide the longitude by two and add 90 to the longitude. 
 > For the latitude we'll need to flip the coordinate's sign by subtracting it from zero and then divide by two and add 45. 
-> In Python this can be expressed as the following, we'll also want to ensure the result is an integer by wrapping the whole calculation in int():
+> In Python this can be expressed as the following, we'll also want to ensure the result is an integer by wrapping the whole calculation in `int()`:
 > ~~~
 > latitude_index = int(((0 - latitude) / 2) + 45)
 > longitude_index = int((longitude / 2) + 90)
