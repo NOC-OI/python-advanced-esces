@@ -71,7 +71,7 @@ Running `parallel --citation` will show us all of the information we'll need if 
 
 ## Working with multiple arguments
 
-The {1} can be used multiple times if we want the same argument to be repeated.
+The `{1}` can be used multiple times if we want the same argument to be repeated.
 If for example the script required an input and output file name and the output was the input file with .out on the end, then we could do the following:
 
 ```
@@ -82,7 +82,7 @@ parallel python myscript-2.py {1} {1}.out ::: $(ls *.nc)
 ## Using a list of files stored in a file
 
 Using commands or lists of arguments is fine for many use cases, but sometimes there are cases where we might want to use a list of files in a text file.
-For this we use the :::: (note four, not three :s) separator and specify the file name after that, each line in file will be used as a line of input. 
+For this we use the `::::` (note four, not three :s) separator and specify the file name after that, each line in file will be used as a line of input. 
 
 ~~~
 ls *.nc | grep "^ABC" > files.txt
@@ -92,14 +92,14 @@ parallel python myscript-2.py {1} {1}.out :::: files.txt
 
 ## More complex arguments
 
-Parallel can also run two (or more) sets of arguments, the first argument will become {1}, the second {2} and so on. Each argument's input list must be separated by a :::.
+Parallel can also run two (or more) sets of arguments, the first argument will become `{1}`, the second `{2}` and so on. Each argument's input list must be separated by a `:::`.
 
 ```
 parallel echo "hello {1} {2}" ::: 1 2 3 ::: a b c
 ```
 {: .language-bash}
 
-We can also mix the ::: and :::: notations to have some arguments come from files and others from lists.
+We can also mix the `:::` and `::::` notations to have some arguments come from files and others from lists.
 For example, if we had a list of netcdf files in files.txt, and you wanted to perform an analysis of two of the varibles, we could use:
 
 ```
@@ -107,7 +107,7 @@ parallel process.py --variable={1} {2} ::: temp sal :::: files.txt
 ```
 {: .language-bash}
 
-{1} will be substituted for temp or sal, while {2} will be given the filenames. Parallel will run process.py for both variables on every file.
+`{1}` will be substituted for temp or sal, while `{2}` will be given the filenames. Parallel will run process.py for both variables on every file.
 
 ### Pairing arguments
 
