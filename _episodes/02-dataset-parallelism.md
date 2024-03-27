@@ -172,11 +172,9 @@ Seq     Host    Starttime       JobRuntime      Send    Receive Exitval Signal  
 >
 > We can time how long a command takes by prefixing it with the `time` command, this will return three numbers:
 >
-> real: how long the whole command took to run
->
-> user: how much time the command used the processor for in user mode, this is typically within our code and the libraries it calls.
->
-> sys: how much time the command used the processor for in system mode, this typically means the time spent waiting for hardware devices to respond, for example the disk, screen or network.
+> - real: how long the whole command took to run
+> - user: how much time the command used the processor for in user mode, this is typically within our code and the libraries it calls.
+> - sys: how much time the command used the processor for in system mode, this typically means the time spent waiting for hardware devices to respond, for example the disk, screen or network.
 >
 > The sys and user time can exceed the real time when multiple processor cores are used.
 >
