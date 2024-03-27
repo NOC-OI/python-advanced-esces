@@ -30,18 +30,22 @@ for file in $(ls) ; do
     echo $file
 done
 ```
-{: .bash}
+{: .language-bash}
 
 We can ask GNU parallel to perform the same task and at least several of the echo commands will run simultaneously.
-The {1} after the echo will be substituted by what ever comes after :::, in this case the output of the ls command. 
+The `{1}` after the echo will be substituted by what ever comes after `:::`, in this case the output of the ls command. 
 
-`parallel echo {1} ::: $(ls)`
-{: .bash}
+```
+parallel echo {1} ::: $(ls)
+```
+{: .language-bash}
 
 We could also use a set of values instead of ls:
 
-`parallel echo {1} ::: 1 2 3 4 5 6 7 8`
-{: .bash}
+```
+parallel echo {1} ::: 1 2 3 4 5 6 7 8
+```
+{: .language-bash}
 
 Just running echo commands isn't very useful, but we could use parallel to invoke a Python script too. 
 The serial example to process a series of NetCDF files would be:
@@ -51,12 +55,14 @@ for file in $(ls *.nc) ; do
     python myscript.py $file
 done
 ```
-{: .bash}
+{: .language-bash}
 
 And with parllel it would be:
 
-`parallel python myscript.py {1} ::: $(ls *.nc)`
-{: .bash}
+```
+parallel python myscript.py {1} ::: $(ls *.nc)
+```
+{: .language-bash}
 
 ## Citing Software
 
@@ -68,8 +74,10 @@ Running `parallel --citation` will show us all of the information we'll need if 
 The {1} can be used multiple times if we want the same argument to be repeated.
 If for example the script required an input and output file name and the output was the input file with .out on the end, then we could do the following:
 
-`parallel python myscript-2.py {1} {1}.out ::: $(ls *.nc)`
-{: .bash}
+```
+parallel python myscript-2.py {1} {1}.out ::: $(ls *.nc)
+```
+{: .language-bash}
 
 ## Using a list of files stored in a file
 
@@ -80,18 +88,24 @@ For this we use the :::: (note four, not three :s) separator and specify the fil
 ls *.nc | grep "^ABC" > files.txt
 parallel python myscript-2.py {1} {1}.out :::: files.txt
 ~~~
-{: .bash}
+{: .language-bash}
 
 ## More complex arguments
 
 Parallel can also run two (or more) sets of arguments, the first argument will become {1}, the second {2} and so on. Each argument's input list must be separated by a :::.
 
-`parallel echo "hello {1} {2}" ::: 1 2 3 ::: a b c`
+```
+parallel echo "hello {1} {2}" ::: 1 2 3 ::: a b c
+```
+{: .language-bash}
 
 We can also mix the ::: and :::: notations to have some arguments come from files and others from lists.
 For example, if we had a list of netcdf files in files.txt, and you wanted to perform an analysis of two of the varibles, we could use:
 
-`parallel process.py --variable={1} {2} ::: temp sal :::: files.txt`
+```
+parallel process.py --variable={1} {2} ::: temp sal :::: files.txt
+```
+{: .language-bash}
 
 {1} will be substituted for temp or sal, while {2} will be given the filenames. Parallel will run process.py for both variables on every file.
 
@@ -99,7 +113,10 @@ For example, if we had a list of netcdf files in files.txt, and you wanted to pe
 
 Sometimes we don't want to run every variable with every other variable, but will want to run them in pairs, for example:
 
-`parallel echo "hello {1} {2}" ::: 1 2 3 :::+ a b c`
+```
+parallel echo "hello {1} {2}" ::: 1 2 3 :::+ a b c
+```
+{: .language-bash}
 
 which produces:
 
@@ -122,7 +139,10 @@ We can tell Parallel to limit how many cores it is running on with the `--max-pr
 In more complex jobs it can be useful to have a log of which jobs ran, when they started and how long they took. 
 This is set with the `--joblog` option to Parallel and is followed by a file name. For example:
 
-`parallel --joblog=jobs.log echo {1} ::: 1 2 3 4 5 6 7 8 9 10`
+```
+parallel --joblog=jobs.log echo {1} ::: 1 2 3 4 5 6 7 8 9 10
+```
+{: .language-bash}
 
 After Parallel has finished we can look at the contents of the file `jobs.log` and see the output:
 
@@ -157,13 +177,13 @@ Seq     Host    Starttime       JobRuntime      Send    Receive Exitval Signal  
 > ~~~
 > time for year in seq 2000 2023 ; do python plot_tempanomaly.py gistemp1200-21c.nc --start $year --end $[$year+1] ; done
 > ~~~
-> {: .bash}
+> {: .language-bash}
 >
 > Now repeat the command using Parallel:
 > ~~~
 > time parallel python plot_tempanomaly.py gistemp1200-21c.nc --start {1} --end {2} ::: $(seq 2000 2023) :::+ $(seq 2001 2024)
 > ~~~
-> {: .bash}
+> {: .language-bash}
 > Compare the runtimes of the parallel and serial versions.
 > Try adding the joblog option and examining how many jobs launched at once.
 > How many jobs did Parallel launch simultaneously? How much faster was the parallel version than the serial version?
