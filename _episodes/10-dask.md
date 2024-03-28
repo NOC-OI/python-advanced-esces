@@ -29,6 +29,8 @@ keypoints:
 
 # Using Dask with Xarray
 
+lazy loading
+
 # Delayed Tasks
 
 # Futures
