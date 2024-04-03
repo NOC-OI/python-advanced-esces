@@ -27,62 +27,148 @@ keypoints:
 # Introducing Xarray
 
 Xarray is a library for working with multidimensional array data in Python. Many of its ways of working are inspired by Pandas but Xarray is built to work well 
-with very large datasets. It is designed to work with popular scientific Python libraries including NumPy and Matplotlib. It is designed to work with arrays that are
+with very large datasets. It is designed to work with popular scientific Python libraries including NumPy and Matplotlib. It is also designed to work with arrays that are
 larger than the memory of the computer. 
 
-## Loading a NetCDF with Xarray
+## Datasets and DataArrays
 
-dataset vs dataarray
-
-dataset based heavily 
-
-dataarray looks like a numpy array, duck typing 
-
-other packages like cuda use these
-
-xr.open_dataset
-
-other engines such as grib, zarr (which we'll look at later)
-
-access data, coords and attrs like netcdf library
+Xarray has two core data types, the DataArray and Dataset. A DataArray is a multidimensional array of data, similar to a NumPy array but with named dimensions. 
+Xarray takes advantage of a Python feature called "Duck Typing", where objects can be treated as another type if they implement the same methods (functions). This allows for
+Numpy to treat an Xarray DataArray as a Numpy array and vice-versa. A Dataset object contains multiple DataArrays and is what we can load NetCDF files into, it will also include metadata about the dataset. 
 
 
-# Xarray indexing
+### Opening a NetCDF Dataset
 
-ds.tempanomaly or ds['tempanomaly']
+We can open a NetCDF file as an Xarray Dataset using the open_dataset function.
 
-to_dataset and to_dataarray to convert
+~~~
+import xarray as xr
+dataset = xr.open_dataset("gistemp1200-21c.nc")
+~~~
+{: .language-python}
+
+In a similar way to the NetCDF library, we can explore the dataset by just giving the variable name:
+
+~~~
+dataset
+~~~
+{: .language-python}
+
+Or we can explore the attributes with the `.attrs` variable, dimensions with `.dims` and variables with `.variables`.
+
+~~~
+print(dataset.attrs)
+print(dataset.dims)
+print(dataset.variables)
+~~~
+{: .language-python}
+
+The `open_dataset` function isn't restricuted to just opening NetCDF files and can also be used with other formats such as GRIB and Zarr. We will look at using Zarr files later on.
+
+## Accessing data variables
+
+To access an indivdual variable we can use an array style notation:
+
+~~~
+print(dataset['tempanomaly']
+~~~
+{: .language-python}
+
+Or a single dimension of the variable with:
+
+~~~
+print(dataset['tempanomaly']['time']
+~~~
+{: .langauge-python}
+
+Individual elements of the time data can be accessed with an additional dimension:
+
+~~~
+print(dataset['tempanomaly']['time'][0]
+~~~
+{: .language-python}
+
+Xarray has another way to access dimensions, instead of putting the name inside array style square brackets we can just put . followed by the varaible name, for example:
+
+~~~
+print(dataset.tempanomaly)
 
 
+Xarray also has the `sel` and `isel` functions for accessing a variable based on name or index. For example we can use:
 
-can't use variables with spaces in the dot notation
+~~~
+dataset['tempanomaly']['time'].sel(time="2000-01-15")
+~~~
+{: .language-python}
+
+or
+
+~~~
+dataset['tempanomaly']['time'].isel(time=0)
+~~~
+{: .language-python}
+
+Slicing can be used on Xarray arrays too, for example to get the first year of temperature data from our dataset we could use
+
+~~~
+dataset['tempanomaly'][:12]
+~~~
+{: .language-python}
 
 
-label space vs index space
-index by latitude/longitude/time instead of index value
+or
+
+~~~
+dataset.tempanomaly[:12]
+~~~
+{: .language-python}
 
 
-isel
-sel
+An alternative way to do this using the sel function with the slice option:
+~~~
+dataset['tempanomaly'].sel(time=slice("2000-01-15","2000-12-15"))
+~~~
+{: .language-python}
 
-add a new variable to an array just by using it
 
-data["newvar"] = [ 1,2,3 ]
+One possible reason to using the sel method instead of the array based indexing is that sel supports variables with spaces in their names, while the dot notation doesn't.
+Although all these different styles can be used interchangbly, for the purpose of providing readable code it is helpful to be consistent and choose one style throughout our program.
 
-working with slices
+### Nearest Neighbour Lookups
 
-nearest neighbour lookups
+We have seen that we can lookup data for a specific date using the sel function, but these dates have to match one which is held within the dataset. For example if we try to lookup
+data for January 1st 2000 then we'll get an error since there is no entry for this date.
+
+~~~
+dataset['tempanomaly'].sel(time='2000-01-01')
+~~~
+{: .language-python}
+
+But Xarray has an option to specify the nearest neighbour using the option `method='nearest'`.
+
+~~~
+dataset['tempanomaly'].sel(time='2000-01-01',method='nearest')
+~~~
+{: .language-python}
+
+Note that this has actually selected the data for 2000-01-15, the nearest available to what we requested.
+
 
 # Plotting Xarray data
 
-.plot method
+We can plot some data for a single location, across all times in the dataset by using the following:
+
+~~~
+dataset['tempanomaly'].sel(lat=53, lon=-3).plot()
+~~~
+{: .language-python}
+
 
 maps/2d images
 
 histograms
 
 facetting?
-
 
 
 ## Interactive plotting with hvplot
