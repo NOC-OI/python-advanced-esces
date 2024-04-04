@@ -163,31 +163,98 @@ dataset['tempanomaly'].sel(lat=53, lon=-3).plot()
 ~~~
 {: .language-python}
 
+One thing to note is that Xarray has not only plotted the graph, but has also automatically labelled it based on the long names and units for the variables that were in the metadata 
+of the dataset. The dates on the X axis are also correctly labelled, whereas many plotting libraries require some extra steps to setup labelling dates correctly.
 
-maps/2d images
+## Plotting Two Dimensional Data
 
-histograms
+Xarray isn't just restricted to plotting line graphs, if we select some data that returns latitude and longitude dimensions then the plot function will show a map. 
 
-facetting?
+~~~
+dataset['tempanomaly'].sel(time="2000-01-15").plot()
+~~~
+{: .language-python}
+
+The plot function being called is actually part of the Matplotlib library and we can invoke Matplotlib if we need to modify some of the plotting parameters. For example we might
+want to change the colourmap to one which uses grayscale. This can be done by first importing `matplotlib.pyplot` and specifying the `cmap` parameter to `plot()`.
+
+~~~
+import matplotlib.pyplot as plt
+dataset['tempanomaly'].sel(time="2000-01-15").plot(cmap=plt.cm.Grays)
+~~~
+{: .language-python}
 
 
-## Interactive plotting with hvplot
+## Plotting Histograms
 
-hvplot
+Another useful plotting function is to plot a histogram of the data, this could be useful for example to plot the distribution of the temperature anomalies on a given day.
+To produce this we call the `plot.hist()` function on a DataArray.
+
+~~~
+dataset['tempanomaly'].sel(time="2010-09-15").plot.hist()
+~~~
+{: .language-python}
+
+
+## Facetting
+
+Should this be included?
+
+
+## Interactive Plotting with Hvplot
+
+So far we've used the matplotlib backend to make our visualisations, this produces some nice graphs but they are completely static and changing the view will require us to change the parameters.
+Another plotting library we can use is [Hvplot](https://hvplot.holoviz.org/), this library allows interactive plots with zooming, panning and displaying the value the mouse is hovering over.
+
+To use hvplot with xarry we must first import the hvplot library with:
+
+~~~
+import hvplot.xarray
+~~~
+{: .language-python}
+
+then instead of calling `plot()` we can now call `hvplot()`.
+
+~~~
+dataset['tempanomaly'].sel(lat=53,lon=-3).hvplot()
+~~~
+{: .language-python}
 
 
 > ## Challenge
-> the challenge
->> ## Solution
->> the solution
+> Using a slice of the array, plot a transect of the surface temperature anomaly across the Atlantic ocean at 23 degrees North between 70 and 17 degrees West on January 15th 2000 and
+> June 15th 2000.
+> > ## Solution
+> > ~~~
+> > dataset['tempanomaly'].sel(time="2000-01-15",lon=slice(-70,-17),lat=23).plot()
+> > dataset['tempanomaly'].sel(time="2000-06-15",lon=slice(-70,-17),lat=23).plot()
+> > ~~~
+> > {: .language-python}
 > {: .solution}
 {: .challenge}
 
 
-
 # Array operations
 
-array mathematical operations
+One of the most powerful features of Xarray is the ability to apply a mathematical operation to part or all of an array. 
+Not only is this convienient for us to avoid needing to write one or more for loops to loop over the array applying the operation, it also performs better and can take advantage of 
+some optimsations of our processor. Potentially it can also be parallelised to apply multiple operations simulatenously across different parts of the array, we'll see more about this later on.
+
+If for example we want to apply a simple offset to our entire dataset we can add or subtract a constant value to every element by doing:
+
+~~~
+dataset_corrected = dataset['tempanomaly'] - 1.0
+~~~
+{: .language-python}
+
+Just to confirm this worked, let's compare the summaries of both datasets:
+
+~~~
+dataset_corrected
+dataset['tempanomaly']
+~~~
+{: .language-python}
+
 
 ## Computation operations
 
