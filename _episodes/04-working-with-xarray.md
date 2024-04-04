@@ -79,7 +79,7 @@ Or a single dimension of the variable with:
 ~~~
 print(dataset['tempanomaly']['time']
 ~~~
-{: .langauge-python}
+{: .language-python}
 
 Individual elements of the time data can be accessed with an additional dimension:
 
