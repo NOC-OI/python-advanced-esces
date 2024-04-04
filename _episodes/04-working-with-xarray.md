@@ -92,7 +92,8 @@ Xarray has another way to access dimensions, instead of putting the name inside 
 
 ~~~
 print(dataset.tempanomaly)
-
+~~~
+{: .language-python}
 
 Xarray also has the `sel` and `isel` functions for accessing a variable based on name or index. For example we can use:
 
