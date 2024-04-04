@@ -236,9 +236,12 @@ dataset['tempanomaly'].sel(lat=53,lon=-3).hvplot()
 
 # Array operations
 
+## Map operations
+
 One of the most powerful features of Xarray is the ability to apply a mathematical operation to part or all of an array. 
 Not only is this convienient for us to avoid needing to write one or more for loops to loop over the array applying the operation, it also performs better and can take advantage of 
 some optimsations of our processor. Potentially it can also be parallelised to apply multiple operations simulatenously across different parts of the array, we'll see more about this later on.
+These types of operations are known as a "map" operation as they map all the values in the array onto a new of values. 
 
 If for example we want to apply a simple offset to our entire dataset we can add or subtract a constant value to every element by doing:
 
@@ -255,36 +258,130 @@ dataset['tempanomaly']
 ~~~
 {: .language-python}
 
+We can combine multiple operations into a single statement if we need to do something more complicated, for example we can apply a linear function by doing:
 
-## Computation operations
+~~~
+dataset_corrected = dataset['tempanomaly'] * 1.1 - 1.0
+~~~
+{: .language-python}
 
-map/reduce concept
+For more complicated operations we might want to write a function and apply that function to the array. Xarray's Dataset type supports this with its `map` function, 
+but `map` will apply to all variables in the dataset, in the above example we only wanted to apply this to the tempanomaly variable.
 
-mean, min, max, median, sum etc
 
-## Dealing with Missing data
+There are a couple of ways around this, we could drop the other variables from a copy of the dataset or we can use the `apply_ufunc` function that works on a single DataArray.
+By referencing `dataset['tempanomaly']` (or `dataset.tempanomaly`) we will get hold of a DataArray object that just represents a single variable. 
 
-use where to cut missing values or mask around a country
+~~~
+corrected_tempanomaly = dataset.drop_vars("time_bnds").map(apply_correction)
+~~~
+{: .language-python}
 
-### Rolling Windows
 
-Moves a window across the array
+~~~
+corrected_tempanomaly = xr.apply_ufunc(apply_correction,dataset['tempanomaly'])
+~~~
+{: .language-python}
 
-ds.rolling(time=5, center=True).construct("window")
+We aren't just restricted to using our own functions with `map` and `apply_ufunc`, we can apply any function that can take in a DataArray object. Because of duck typing functions
+which take Numpy arrays will also work. For example we can use a function from the Numpy library, one possible function that we might use from Numpy is the clip function, this 
+requires three arguments, the array to apply the clipping to, the minimum value and maximum value. Any value below the minimum will be converted to the minimum and any value above
+the maximum will be converted to the maximum. If for example we wanted to clip our dataset between -2 and +2 degrees then we could do the following:
 
-### Coarse Windows
+~~~
+import numpy
+dataset_clipped = xr.apply_ufunc(numpy.clip,dataset['tempanomaly'],-2,2)
+~~~
+{: .language-python}
 
-reduce resolution of data
+### Broadcasting
 
-non-overlapping blocks of an array
 
-ds.coarsen(lat=5,lon=5,boundary="trim")
+## Reduce Operations
 
-add .mean().plot()
+We've now seen map operations that apply a function to every point in an array and return a new array of the same size. Another type of operation is a "reduce" operation which will 
+reduce an array to a single result. Common examples are taking the mean, median, sum, minimum or maximum of an array. Like with map operations, traditionally we might have approached
+this by using for loops to work through the array and compute the answer. But Xarray allows us to use a single function call to get this result and this has the potential to be parallelised
+for improved performance. 
 
-reshape time into multiple dimensions, e.g. change a monthly data series to a year/month series
+Both Xarray's Dataset and DataArray objects have a set of built in functions for common reduce operations including `min`, `max`, `mean`, `median` and `sum`. 
 
-### Group by
+~~~
+tempanomaly_mean = dataset['tempanomaly'].mean()
+print(tempanomaly_mean.values)
+~~~
+{: .language-python}
+
+We can also operate on slices of an array, if we wanted to calculate the mean temperature along the transect of 23 degrees North and between 70 and 17 degrees West on January 15th 2000,
+then we could do:
+
+~~~
+transect_mean = dataset['tempanomaly'].sel('2000-01-15',lon=slice(-70,-17),lat=23).mean()
+print(transect_mean.values)
+~~~
+{: .language-python}
+
+
+## Conditionally Selecting and Replacing Data
+
+Sometimes we want to mask out certain regions of a dataset or to set part of the region to a certain value. Xarray's `where` function can be used to replace data based on certain 
+criteria. There are two (or three depending on how you count) sublety different versions of the `where` function. One is part of the main Xarray library (e.g. invoked with `xr.where`)
+and it follows the syntax `where(cond, x, y)`, with cond being the condition to apply, x being what to do if it is true and y if it is false. The other version of the `where` function
+exists in the `xarray.DataArray` and `xarray.Dataset` packages and has a slightly different syntax of `where(cond, other)`, here `other` refers to what do when the condition is false, 
+if the condition is true then the value currently in this position is copied to the resulting array and if `other` is not specified the value is converted to an NaN (not a number).
+
+For example if we want all data that is negative to be converted to an NaN then we could use the Dataset/DataArray version of where:
+
+~~~
+dataset['tempanomaly'].where(dataset['tempanomaly'] >= 0.0)
+~~~
+{: .language-python}
+
+If we decided that we wanted to make all negative values zero and multiply all positive values by 2 then we could use the `xr.where` function instead, 
+~~~
+xr.where(dataset['tempanomaly'] < 0.0, 0, dataset['tempanomaly'] * 2.0)
+~~~
+{: .language-python}
+
+The DataArray version of `where` can also apply conditions against dimensions instead of variables, for example if we wanted to mask out all of the Western hemisphere values with NaNs
+then we could use:
+
+~~~
+dataset['tempanomaly'].where(dataset['tempanomaly'].lon > 0)
+~~~
+{: .language-python}
+
+
+> ## Challenge
+> Using map/reduce operations and the where function to do the following on the example dataset:
+> 1. Calculate the 95th percentile of the data set using the `quantile` function in Xarray.
+> 2. Use there where function to remove any data above the 95th percentile.
+> 3. Multiply all remaining values by a correction factor of 0.90.
+> 4. Plot both the original and corrected version of the dataset for the first day in the dataset (2000-01-15).
+> > ## Solution
+> > ~~~
+> > threshold = dataset['tempanomaly'].quantile(0.95)
+> > lower_95th = dataset['tempanomaly'].where(dataset['tempanomaly'] < threshold)
+> > lower_95th = lower_95th * 0.90
+> > lower_95th[0].plot()
+> > dataset['tempanomaly'].plot()
+> > ~~~
+> > {: .language-python}
+> {: .solution}
+{: .challenge}
+
+# Xarray Patterns
+
+Computational patterns are common operations that we might perform. Xarray has several patterns that it recommends and has been designed to faciliate. These include:
+
+- Resampling
+- Grouping Data
+- Rolling Windows
+- Coarsening
+
+## Resampling
+
+## Group by
 
 split-apply-combine pattern, break data into groups, apply a reduction, combine results into a new dimensions
 
@@ -296,11 +393,54 @@ resampling
 
 isin, checks if value is in a certain range and then assigns a value, e.g. isin(month, [12,1,2])] = "DJF"
 
-## Applying custom functions
+
+## Rolling Windows
+
+Xarray can work on a "rolling window" of data that covers a subset of the data. This can be useful for example to calculate a rolling mean of 12 months worth of data.
+The following will graph both the monthly values and the rolling mean temperature anomaly for Liverpool, UK.
+
+~~~
+import matplotlib.pyplot as plt
+
+rolling = dataset['tempanomaly'].rolling(time=12, center=True)
+ds_rolling = rolling.mean()
+dataset.tempanomaly.sel(lon=-3, lat=53).plot(label="monthly anom")
+ds_rolling.sel(lon=31,lat=51).plot(label="12 month rolling mean")
+plt.legend()
+~~~
+{: .language-python}
 
 
-## Broadcasting
-## Interpolating, downsampling etc
+## Coarsening
+
+Coarsening can be used to reduce the resolution of data in a similar way to resample. The difference is that the Xarray `coarsen` function specifies the interval it works
+across. If data is missing then coarsen will take account of that, while resample will not.
+
+~~~
+coarse = dataset.coarsen(lat=5,lon=5, boundary="trim")
+~~~
+{: .language-python}
+
+This will return a `DataCoarsen` object that represents 5 degree windows across the lat and lon dimensions of the dataset.
+To do something useful with it we need to apply a function such as `mean` that will calulate a new dataset/array using our coarsening operation.
+
+~~~
+coarse.mean()['tempanomaly'][0].plot()
+~~~
+{: .language-python}
+
+
+We aren't just restricted to working across spatial dimensions, coarsening can also operate in time, for example to convert a monthly dataset to an annual one.
+~~~
+coarse = dataset.coarsen(time=12)
+coarse.mean()['tempanomaly'].sel(lat=53,lon=-3).plot()
+#for comparison
+dataset['tempanomaly'].sel(lat=53,lon=-3).plot()
+~~~
+{: .language-python}
+
+
+
 
 # Working with time series data
 
