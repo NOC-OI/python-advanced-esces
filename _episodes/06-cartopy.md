@@ -35,7 +35,7 @@ dataset = xr.open_dataset("gistemp1200-21c.nc")
 ~~~
 {: .language-python}
 
-~~~
+
 To setup a Cartopy plot we'll need to create a matplotlib figure and add a subplot to it. Cartopy also requires us to specify a map projection, for this example we'll use the PlateCarree
 projection. Note that due to how Matplotlib interacts with Jupyter notebooks, the following must all appear in the same cell.
 To extract some data from our datset we'll use `dataset['tempanomaly'].sel(time="2000-01-15")` to get the temperature anomaly data for January 15th 2000.
