@@ -27,8 +27,8 @@ keypoints:
 # Introducing Xarray
 
 Xarray is a library for working with multidimensional array data in Python. Many of its ways of working are inspired by Pandas but Xarray is built to work well 
-with very large datasets. It is designed to work with popular scientific Python libraries including NumPy and Matplotlib. It is also designed to work with arrays that are
-larger than the memory of the computer. 
+with very large multidimensional array based data. It is designed to work with popular scientific Python libraries including NumPy and Matplotlib. 
+It is also designed to work with arrays that are larger than the memory of the computer and can load data from NetCDF files (and save them too).
 
 ## Datasets and DataArrays
 
@@ -274,6 +274,10 @@ There are a couple of ways around this, we could drop the other variables from a
 By referencing `dataset['tempanomaly']` (or `dataset.tempanomaly`) we will get hold of a DataArray object that just represents a single variable. 
 
 ~~~
+def apply_correction(x):
+    x = x * 1.01 + 0.1
+    return x
+
 corrected_tempanomaly = dataset.drop_vars("time_bnds").map(apply_correction)
 ~~~
 {: .language-python}
@@ -382,17 +386,85 @@ Computational patterns are common operations that we might perform. Xarray has s
 
 ## Resampling
 
+Xarray can resample data to reduce its frequency, this is done through the `resample` function on a DataArray or Dataset. Resample only works on the time dimension of a dataset/array.
+
+Let's call resample on a selection of our data for a single location, we can then produce a line graph of the temperature over time and see the difference between the original and 
+resampled version. The `resample` function takes a paramter of a variable name mapped (with the = symbol) to a resampling frequency, this could be "h" for hourly, "D" for daily, "W" 
+for weekly, "ME" for month endings, "MS" for month starts, "YS" for year starts and "YE" for year ends. These options are borrowed from the Pandas resample frequency and a full list 
+of them can be found in the [Pandas documentation](https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#offset-aliases). In our example we'll do a yearly resampling,
+since the data is already monthly.
+
+~~~
+resampled = dataset['tempanomaly'].sel(lat=53,lon=-3).resample(time="1YE")
+~~~
+{: .language-python}
+
+This will return a DataArrayResample object that details the resampling, but we haven't actually resampled yet. To do that we have to apply an averaging function such as `mean` to
+the DataArrayResample object. We can apply this and plot the result, for comparison let's plot the original data alongside it too. To get a legend we need to import `matplotlib.pyplot`
+and call it's `legend` function.
+
+~~~
+import matplotlib.pyplot as plt
+dataset['tempanomaly'].sel(lat=53,lon=-3).plot(label="Original Monthly Data")
+resampled.mean.plot(label="Resampled Annual Data",marker="o")
+plt.legend()
+~~~
+{: .language-python}
+
+
 ## Group by
 
-split-apply-combine pattern, break data into groups, apply a reduction, combine results into a new dimensions
+The group by pattern allows us to group related data together, a common example in environmental science is to group monthly data into seasonal groups of three months each.
 
-Going from daily to monthly, we have variable length months
+We can group these by calling the `groupby` function and specifying that we want the data in seasonal groups with "time.season" as the parameter to `groupby`. If we had
+daily data and wanted it grouped by months then we could use "time.month" instead. 
 
-groupby_bins 
+~~~
+grouped = dataset['tempanomaly'].sel(lat=53,lon=-3).groupby("time.season")
+~~~
+{: .language-python}
 
-resampling
+In a similar way to how resample returned a DataArrayResample object, groupby returns a DataArrayGroupBy object that describes the groups we've created, but we need to apply some kind
+of reduce operation to bring any data into these groups. Again, applying a mean makes sense here to produce a mean value for each season. As there are only four of these lets plot them
+as a bar chart, we need to give the names of the groups and the values we'll be plotting to `plt.bar`.
 
-isin, checks if value is in a certain range and then assigns a value, e.g. isin(month, [12,1,2])] = "DJF"
+~~~
+grouped_mean = grouped.mean()
+plt.bar(grouped_mean.season,grouped_mean)
+~~~
+{: .language-python}
+
+### Binned Group By 
+
+There is another version of the `groupby` function called `groupby_bins` which allows us to group data into bins covering a range of values. 
+
+~~~
+bins = [-2.0,-1.0,0.0,1.0,2.0,3.0]
+binned = dataset.groupby_bins("tempanomaly",bins)
+~~~
+{: .language-python}
+
+Again as with our other functions we get an object back from groupby_bins that defines the bins, but doesn't put any data onto them. In this case 
+lets find out how many items are in each bin by using the count function to count them.
+
+~~~
+counts = binned.count()
+~~~
+{: .language-python}
+
+
+Now to display this on a graph requires a bit of processing to extract the labels of the bins, we need to loop through all the bins and convert their names into strings.
+Once this is done we can plot a bar graph showing the counts in each bin.
+
+~~~
+labels = []
+for i in range(0,len(counts['tempanomaly']):
+    print(counts['tempanomaly_bins'][i].values,counts['tempanomaly'][i].values)
+    labels.append(str(counts['tempanomaly_bins'][i].values))
+
+plt.bar(labels,counts['tempanomaly'].values)
+~~~
+{: .language-python}
 
 
 ## Rolling Windows
@@ -442,29 +514,40 @@ dataset['tempanomaly'].sel(lat=53,lon=-3).plot()
 
 
 
-
-# Working with time series data
-
-date time accessors
-
-da.time
-da.time.dt.day
-da.time.dt.season
-
-timedate objects?
-strftime
-
-
 # Writing Data
+
+Once we have finished calculating some new data with Xarray we might want to write it back to a NetCDF file. Using the earlier example of a dataset which has had some corrections applied,
+we could write this data back to a NetCDF file by doing:
+
+~~~
+dataset_corrected = dataset['tempanomaly'] * 1.1 - 1.0
+dataset_corrected.to_netcdf("corrected.nc")
+~~~
+{: .language-python}
 
 
 
 > ## Challenge
-> the challenge
->> ## Solution
->> the solution
+> There are several example datasets built into Xarray. You can load them with the `tutorial.load_dataset` function from the main xarray library. One of these is the Extended Reconstructed 
+> Sea Surface Temperature data from NOAA, known as "ersstv5". Load this data with Xarray and do the following:
+> 1. Slice the data so that only data from before 2000 is included, by defalt the dataset runs up to the end of 2021.
+> 2. Resample the data to annual means.
+> 3. Calculate a global annual mean for each year.
+> 4. Plot the global mean temperatures on a line graph.
+> 5. Write the resulting Dataset to a new NetCDF file.
+>
+> > ## Solution
+> > ~~~
+> > import xarray as xr
+> > sst = xr.tutorial.load_dataset("ersstv5")
+> > sst_20c = sst.sel(time=slice("1970-01-01","1999-12-31"))
+> > sst_annual = sst.resample(time="1YE").mean()
+> > sst_global = sst_annual.coarsen(lat=89,lon=180).mean()
+> > sst_global.plot()
+> > sst_global.to_netcdf("global-mean-sst.nc")
+> > ~~~
+> > {. language-python}
 > {: .solution}
 {: .challenge}
-
 
 {% include links.md %}
