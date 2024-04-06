@@ -51,9 +51,9 @@ In the information about the Dask cluster is a link to a Dashboard webpage. From
  memory usage and the status of the Dask workers. This can be really useful when checking if our Dask cluster is behaving correctly and working out how optimially our code is making
 use of Dask's parallelism.
 
-![Dask dashboard graph view](fig/Dask-Task-Graph.png)
+![Dask dashboard graph view](../fig/Dask-Task-Graph.png)
 
-![Dask dashboard task view](fig/Dask-Status.png)
+![Dask dashboard task view](../fig/Dask-Status.png)
 
 ### Using the Dask dashboard on JASMIN
 
