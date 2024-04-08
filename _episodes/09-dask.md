@@ -207,8 +207,41 @@ result = squared.compute()
 
 ## Futures
 
+An alternative approach to using any function with Dask is to use Dask Futures. These begin execution immediately, but are non-blocking so execution (appears to) proceeds to the next
+statement while the processing is done in the background. Any objects which are returned by a function will have a Dask future type until the exectuion has completed. 
 
+If we want to block until a result is available then we can call the `result` function. For example taking the code from the last section we can do the following:
 
+~~~
+import dask.array as da
+
+def apply_correction(x):
+   return x * 1.01 + 0.1
+
+def square(x):
+   return x ** 2
+
+x = da.random.random(10_000), chunks=1000)
+corrected = client.submit(apply_correction, x)
+
+corrected
+
+squared = client.submit(square, corrected)
+
+squared
+
+squared = squared.result()
+squared
+~~~
+{: .language-python}
+
+If we watch the task activity in the Dask dashboard then we should see activity start as soon as the `client.submit` calls are made. The `squared` and `corrected` variables
+will be Dask future objects, if we display them we will see their status as to whether they are finished or not.
+
+### When to use Futures or Delayed
+
+The Dask documentation does not have much advice on when it is more appropriate to use Futures or Delayed functions. Some [general advice](https://dask.discourse.group/t/documentation-on-the-interplay-between-graphs-and-futures/269) 
+from the forums is to use Delayed functions and task graphs first, but to switch to futures for more complicated problems.
 
 ## Using Dask with Xarray
 
@@ -313,17 +346,18 @@ squeue -p dask
 Once we are done with Dask we can shutdown the cluster by calling its `shutdown` function. This should cause the jobs in the SLURM queue to finish.
 
 ~~~
-# don't do this yet!
 cluster.shutdown()
 ~~~
 {: .language-python}
 
 
 > ## Challenge
-> the challenge
->> ## Solution
->> the solution
-> {: .solution}
+> Setup Dask a Dask cluster on JASMIN. Load the GIS temperature anomaly dataset with Xarray and run the correction algorithm on it.
+> Time how long the compute operation takes by using the %%time magic. 
+> Experiment with:
+> - Changing the chunk sizes you use in Xarray
+> - Changing the number of worker cores
+> - Changing the number of workers (set in `cluster.adapt`)
 {: .challenge}
 
 
