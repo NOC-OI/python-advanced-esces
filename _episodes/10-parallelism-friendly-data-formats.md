@@ -154,12 +154,76 @@ ssh2[0,0,0]
 {: .language-python}
 
 
-> ## Challenge
-> the challenge
+> ## Plot Sea Surface Temperature
+> Extract and plot the sea surface temperature (sst variable) for the nearest date to January 1st 1965 that is in the dataset.
 >> ## Solution
->> the solution
+>> ~~~
+>> import xarray as xr
+>> ds = xr.open_zarr("https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr")
+>> sst = ds['sst'].sel(time_counter="1965-01-01",method="nearest")
+>> sst.plot()
+>> ~~~
+>> {: .language-python}
 > {: .solution}
 {: .challenge}
+
+
+> ## Calculate the mean sea surface temperature for two years
+> Calculate the mean sea surface temperature for 1960 and 1961.
+>> ## Solution
+>> ~~~
+>> import xarray as xr
+>> ds = xr.open_zarr("https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr")
+>> sst = ds['sst'].sel(time_counter=slice("1960-01-01","1961-12-31"))
+>> grouped_mean = sst.groupby("time_counter.year").mean()
+>> coarsened_mean = grouped_mean.coarsen(x=len(sst.x),y=len(sst.y)).mean()
+>> mean_sst = coarsend_mean.compute()
+>> ~~~
+>> {: .language-python}
+> {: .solution}
+{: .challenge}
+
+
+> ## Calculate the mean sea surface temperature for 10 years with Dask
+> Calculate the mean sea surface temperature for 1960 and 1969. Use the JASMIN Dask gateway to parallelise the calculation, use 10 worker threads and set the 
+> time_counter chunk size to 10 when opening the zarr file. Measure how long it takes to compute the result, try changing the number of workers up and down to see 
+> what the optimal number is.
+>> ## Solution
+>> ~~~
+>> import xarray as xr
+>> import dask_gateway
+>> 
+>> gw = dask_gateway.Gateway("https://dask-gateway.jasmin.ac.uk", auth="jupyterhub")
+>> 
+>> options = gw.cluster_options()
+>> options.worker_cores = 1 
+>> options.scheduler_cores = 1
+>> options.worker_setup='source /apps/jasmin/jaspy/mambaforge_envs/jaspy3.10/mf-22.11.1-4/bin/activate ~/.conda/envs/esces'
+>> 
+>> clusters = gw.list_clusters()
+>> if not clusters:
+>>     cluster = gw.new_cluster(options, shutdown_on_close=False)
+>> else:
+>>     cluster = gw.connect(clusters[0].name)
+>> 
+>> cluster.adapt(minimum=1, maximum=10)
+>> client = cluster.get_client()
+>> client
+>> 
+>> ds = xr.open_zarr("https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr",chunks={"time_counter" : 10})
+>> sst = n06_T['sst'].sel(time_counter=slice("1960-01-01","1969-12-31"))
+>> grouped_mean = sst.groupby("time_counter.year").mean()
+>> coarsened_mean = grouped_mean.coarsen(x=len(sst.x),y=len(sst.y)).mean()
+>> result = client.compute(coarsened_mean).result()
+>> result.plot()
+>> cluster.shutdown()
+>> ~~~
+>> Optimal workers is probably 10 and execution should take around 22 seconds. Single threaded execution time is 57 seconds.
+>> {: .language-python}
+> {: .solution}
+{: .challenge}
+
+
 
 
 {% include links.md %}
