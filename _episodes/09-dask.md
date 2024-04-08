@@ -147,7 +147,6 @@ type(result)
 {: .challenge}
 
 
-
 ### Troubleshooting Dask
 
 Sometimes Dask can jam up and stop executing tasks. If this happens try the following:
@@ -155,32 +154,134 @@ Sometimes Dask can jam up and stop executing tasks. If this happens try the foll
 - Shutdown the client and restart it.
 - Shutdown the kernel of your notebook and rerun the notebook.
 
-
-## Using Dask with Xarray
-
-lazy loading
-
-
 # Low Level computation with Dask
+
+When higher level Dask functions are not sufficient for our needs we can write our own functions and request Dask executes these in parallel. Dask has two different strategies we can use
+for this, Delayed functions and Futures. Delayed functions will delay starting until we call `.compute` at which point all the dependencies of the operation we request are executed. 
+With futures tasks begin as soon as possible and immediately return a future object that is eventually populated with the result when the operation completes.
 
 ## Delayed Tasks
 
+To execute a function as a delayed task we must tag it with a `dask.delayed` decorator. Here is a simple example:
+
+~~~
+@dask.delayed
+def apply_correction(x):
+   return x * 1.01 + 0.1
+
+import dask.array as da
+x = da.random.random(1_000_000), chunks=1000)
+corrected = apply_correction(x)
+
+squared = corrected ** 2
+
+result = squared.compute()
+~~~
+{: .language-python}
+
+This will call the apply_correction function on each of the 1000 chunks that make up the array `x` and then square the result. But nothing will execute until we call the `compute`
+function on the last line. Both squared and corrected will have the type of `dask.delayed.Delayed` until they have been computed.
+
+### Visualising the Task Graph
+
+We have already seen that we can visualise the Dask task graph in the dashboard as it is executing. But we can also visualise it inside a Jupyter notebook by calling the `visualize` 
+function on a Dask datastructure. We can render this before we call `compute` if we want to see what is going to happen. This may not always work with larger datasets, our example above
+with 1,000,000 elements and 1000 chunks is going to be too big, but if we reduce the size of the array `x` to 10,000 items instead of 1,000,000 then it will be possible.
+
+~~~
+@dask.delayed
+def apply_correction(x):
+   return x * 1.01 + 0.1
+
+import dask.array as da
+x = da.random.random(10_000), chunks=1000)
+corrected = apply_correction(x)
+
+squared = corrected ** 2
+
+squared.visualize()
+
+result = squared.compute()
+~~~
+{: .language-python}
+
 ## Futures
+
+
+
+
+## Using Dask with Xarray
+
+We previously used Xarray to load our temperature anomaly dataset from the Goddard Institute for Space Studies and performed some computational operations against it using Xarray. 
+Let's go and load it again, but this time we'll give an extra option to `open_dataset`, the `chunk` option which allows us to chunk the Xarray data to prepare it for computing with Dask.
+The `chunk` option expects a Python dictionary defining the chunk size for each of the dimensions, any dimension we don't want to chunk should be set to -1. For example:
+
+~~~
+import xarray as xr
+from dask.distributed import Client
+client = Client(n_workers=2, threads_per_worker=2, memory_limit='1GB')
+client
+ds = xr.open_dataset("gistemp1200-21c.nc", chunks={'lat':30, 'lon':30, 'time':-1})
+ds
+da = ds['tempanomaly']
+da
+~~~
+{: .language-python}
+
+Here we see that the Dask DataArray `da` is now chunked every 30 degrees of Latitude and Longitude. We can also specify automatic chunking by using `chunks={}`, but with such a small 
+dataset there won't be any chunking applied automatically.
+
+Any Xarray operations we now apply to the array will now use Dask. Let's repeat some of our earlier Xarray examples and compute a correction factor to the dataset, if we watch the 
+Dask dashboard we'll see some signs of activity. 
+
+~~~
+dataset_corrected = ds['tempanomaly'] * 1.1 - 1.0
+~~~
+{: .language-python}
+
+If we print `dataset_corrected` we'll see that it actually contains a Dask array. 
+
+~~~
+print(dataset_corrected)
+~~~
+{: .language-python}
+
+As we saw earlier on Dask is "lazy" and doesn't compute anything until we tell it to. To get Dask to trigger computing the result we need to call `.compute` on `dataset_corrected`.
+
+~~~
+result = dataset_corrected.compute()
+result
+~~~
+{: .language-python}
+
+
 
 # Using the JASMIN Dask gateway
 
-JASMIN offers a Dask Gateway service which can submit Dask jobs to a special queue on the Lotus cluster.
+JASMIN offers a Dask Gateway service which can submit Dask jobs to a special queue on the Lotus cluster. To use this we need to do a bit of extra setup. We will need to import
+the `dask_gateway` library and configure the gateway. 
 
 ~~~
 import dask_gateway
 import dask
 gw = dask_gateway.Gateway("https://dask-gateway.jasmin.ac.uk", auth="jupyterhub")
+~~~
+{: .language-python}
 
+The gateway can be given a set of options including how many worker cores to use, initially we can set this to one and scale it up later. We also need to allocate at least one core
+as to the scheduler which will manage our Dask cluster. Finally we need to tell Dask which Conda/Mamba environment to use and this needs to match the one we're running in our notebook.
+
+~~~
 options = gw.cluster_options()
 options.worker_cores = 1
 options.scheduler_cores = 1
 options.worker_setup='source /apps/jasmin/jaspy/mambaforge_envs/jaspy3.10/mf-22.11.1-4/bin/activate ~/.conda/envs/esces'
+~~~
+{: .language-python}
 
+Finally we can check if we already had a cluster running and reuse that if we do and then get a `client` object from the cluster that will behave the same way as the local Dask client
+did. 
+~~~
 clusters = gw.list_clusters()
 if not clusters:
     cluster = gw.new_cluster(options, shutdown_on_close=False)
@@ -192,18 +293,30 @@ client = cluster.get_client()
 {: .language-python}
 
 
+Now that we have a running cluster we can allow it to adapt and scale up and down as we demand it. This will translate to Slurm jobs being launched on the JASMIN cluster itself.
+JASMIN allows users to spawn up to 16 jobs in the Dask queue, but one of these will be taken by the scheduler so the we can only launch a maximum of 15 workers.
+
 ~~~
-# Create at least one worker, and allow your cluster to scale to 15.
-# The max JASMIN allows is 16, but one of these is used as the scheduler.
 cluster.adapt(minimum=1, maximum=15)
 ~~~
 {: .language-python}
+
+If we now connect to one of the JASMIN sci servers (sci1-8) we can see our jobs in the SLURM queue by running the `squeue` command.
 
 ~~~
 ssh -J <jasminusername>@login2.jasmin.ac.uk sci6
 squeue -p dask
 ~~~
 {: .language-bash}
+
+
+Once we are done with Dask we can shutdown the cluster by calling its `shutdown` function. This should cause the jobs in the SLURM queue to finish.
+
+~~~
+# don't do this yet!
+cluster.shutdown()
+~~~
+{: .language-python}
 
 
 > ## Challenge
