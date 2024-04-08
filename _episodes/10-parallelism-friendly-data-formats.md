@@ -94,7 +94,65 @@ object stores copy the S3 protocol both for accessing objects, managing permissi
 
 # Zarr files
 
+Zarr is a cloud optimised file format designed for working with multidimensional data. Its is very similar to NetCDF, but it splits up data into chunks. When requesting the
+Zarr file from an object store (or a local disk) we can limit which chunks we transfer. Zarr files contain a header which describes the structure of the file and information
+about the chunks, when loading the file this header will be loaded to allow the Zarr library to know about the rest of the file. Zarr is also designed to support multiple concurrent readers, allowing us to read the
+file in parallel using multiple threads or even with Dask tasks that are distributed across multiple computers. Zarr has been built with Python in mind and has libraries to
+allow native Python operations on Zarr. There is support for Zarr in other languages such as C in the recent versions of the NetCDF libraries.
+
 ## Zarr and Xarray
+
+Xarray can open Zarr files using the `open_zarr` function that is similar to the `open_datset` function we've been using to open NetCDF data. We will be using an example Zarr
+ file from the National Oceanography Centre that has been produced by running a NEMO model and covers the ocean globally, this file is 200GB, DO NOT DOWNLOAD IT! 
+
+~~~
+import xarray as xr
+
+ds = xr.open_zarr("https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr")
+ds
+~~~
+{: .language-python}
+
+We can now see the metadata for the Zarr file. It includes 75 depth levels, 119 time steps and a 4322x3059 spatial resolution. There are also 17 different data variables 
+included in the file. Some of the variables only cover the ocean surface and don't use the depth dimension. All of this information has come from the header of the Zarr file,
+so far none of the actual data has been transferred, we have done what is known as a "lazy load" where data will only be transferred from the object store when we actually access it.
+
+Let's try and read it by slicing out a small part of the file, we'll only get the `ssh` variable which is the sea surface height.
+
+~~~
+ssh = ds['ssh'].sel(time_counter=slice(0,1),y=slice(500,700), x=slice(1000,1200))
+ssh
+~~~
+{: .language-python}
+
+We can see that ds_sub is now a 200x200x1 array that only takes up 156.25kB from the original 200GB file. Even at this point no data will have been transferred.
+If we explore further and print the `ssh` array we'll see that it is actually using a Dask array underneath.
+
+~~~
+print(ssh)
+~~~
+{: .language-python}
+
+To convert this into a standard Xarray DataArray we can call `.compute` on the `ssh`.
+
+~~~
+ssh_local = ssh.compute()
+~~~
+{: .language-python}
+
+We can now plot this by using:
+~~~
+ssh2.plot()
+~~~
+{: .language-python}
+
+Or access some of the data:
+
+~~~
+ssh2[0,0,0]
+~~~
+{: .language-python}
+
 
 > ## Challenge
 > the challenge
@@ -105,3 +163,5 @@ object stores copy the S3 protocol both for accessing objects, managing permissi
 
 
 {% include links.md %}
+
+
