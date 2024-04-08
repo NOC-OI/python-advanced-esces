@@ -351,6 +351,12 @@ cluster.shutdown()
 {: .language-python}
 
 
+### JASMIN Dask Dashboard
+
+If you display the contents of the `client` or `cluster` variable then you will be given an address beginning https://dask-gateway.jasmin.ac.uk that will take you to a Dask
+dashboard for your cluster. Unfortunately this server is only accessible within the JASMIN network, to access it you will have to use a web browser running inside an 
+[NoMachine](https://help.jasmin.ac.uk/docs/interactive-computing/graphical-linux-desktop-access-using-nx/) session or port forward via the JASMIN login server.
+
 > ## Challenge
 > Setup Dask a Dask cluster on JASMIN. Load the GIS temperature anomaly dataset with Xarray and run the correction algorithm on it.
 > Time how long the compute operation takes by using the %%time magic. 
