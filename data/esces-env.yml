@@ -27,3 +27,7 @@ dependencies:
   - netcdf4
   - hvplot
   - pooch
+#  - jupyter-server-proxy
+#  - nodejs
+  - graphviz
+  - python-graphviz
