@@ -60,8 +60,7 @@ function takes, the smaller the relative uncertainty is deemed to be,
 and so the fewer repeats are performed. `timeit` will tell you how
 many times it ran the function, in addition to the timings.
 
-While today we'll work at the Jupyter notebook, you can also use
-`timeit` at the command-line; for example,
+You can also use `timeit` at the command-line; for example,
 
 ~~~
 $ python -m timeit --setup='import numpy; x = numpy.arange(1000)' 'x ** 2'
@@ -74,12 +73,14 @@ going to be doing a lot.
 
 ## Profiling
 
-You can also explore profiling to measure the performance of our Python code. Profiling provides detailed information about how much time is spent in each function, which can help us identify bottlenecks and optimize our code.
+You can also explore profiling to measure the performance of our Python code. Profiling provides detailed information about how much time is spent on each function, which can help us identify bottlenecks and optimize our code.
 
 In Python, we can use the `cProfile` module to profile our code. Let's
 see how we can do this by creating two functions:
 
 ~~~
+import numpy as np
+
 # A slow function
 def my_slow_function():
   data = np.arange(1000000)
@@ -97,6 +98,7 @@ def my_fast_function():
 Now run each function using the cProfile command:
 
 ~~~
+import cProfile
 cProfile.run("my_slow_function()")
 cProfile.run("my_fast_function()")
 ~~~
@@ -106,7 +108,7 @@ This will output detailed profiling information for both functions.
 You can use this information to analyze the performance of your code
 and optimize it as needed.
 
-Do you know why the fast function is faster than the slow function?
+> Do you know why the fast function is faster than the slow function?
 
 # Numpy whole array operations
 
@@ -151,33 +153,10 @@ cProfile.run("numpy_multiply(arr)")
 
 In this example, `traditional_multiply` uses nested loops to multiply each element of the array by 2, while `numpy_multiply` performs the same operation using a single NumPy operation. When comparing the execution times using `%timeit`, you'll likely observe that `numpy_multiply` is significantly faster.
 
-The reason why the Numpy operation is faster than the traditional loop-based approach is because:
-
-1. **Vectorization**: Numpy operations are vectorized, meaning they are applied element-wise to the entire array at once. This allows for efficient parallelization and takes advantage of optimized low-level implementations.
-  
-2. **Avoiding Python overhead**: Traditional loops in Python incur significant overhead due to Python's dynamic typing and interpretation. Numpy operations are implemented in C, bypassing much of this overhead.
-
-3. **Optimized algorithms**: Numpy operations often use highly optimized algorithms and data structures, further enhancing performance.
-
-<!-- 
-## Paralelization
-
-Parallelization with NumPy can significantly speed up computations, especially when dealing with large arrays or complex mathematical operations. However, NumPy itself doesn't offer built-in parallelization but relies on vectorized operations, which leverage highly optimized C and Fortran libraries underneath for efficiency. However, you can utilize multi-threading or multi-processing to parallelize certain operations.
-
-  ```python
-  import numpy as np
-  import multiprocessing as mp
-  
-  def parallel_function(arr):
-      return arr * 2
-  
-  if __name__ == '__main__':
-      arr = np.random.rand(1000, 1000)
-      pool = mp.Pool(mp.cpu_count())  # Utilize all available CPU cores
-      result = pool.map(parallel_function, [arr] * 10)  # Example parallel processing
-      pool.close()
-      pool.join()
-  ``` -->
+> The reason why the Numpy operation is faster than the traditional loop-based approach is because:
+> 1. **Vectorization**: Numpy operations are vectorized, meaning they are applied element-wise to the entire array at once. This allows for efficient parallelization and takes advantage of optimized low-level implementations.
+> 2. **Avoiding Python overhead**: Traditional loops in Python incur significant overhead due to Python's dynamic typing and interpretation. Numpy operations are implemented in C, bypassing much of this overhead.
+> 3. **Optimized algorithms**: Numpy operations often use highly optimized algorithms and data structures, further enhancing performance.
 
 # Numba
 
@@ -195,8 +174,8 @@ in the way languages like C and Fortran are, due to its flexible type
 system, what we can do is compile a function for a given data type once
 we know what type it can be given. Subsequent calls to the same function
 with the same type make use of the already-compiled machine code that was
-generated the first time. This adds a significant overhead to the first
-run of a function, since the compilation takes longer than the less
+generated the first time. This adds significant overhead to the first
+run of a function since the compilation takes longer than the less
 optimised compilation that Python does when it runs a function; however,
 subsequent calls to that function are generally significantly faster.
 If another type is supplied later, then it can be compiled a second time.
@@ -205,7 +184,6 @@ Numba makes extensive use of a piece of Python syntax known as
 "decorators". Decorators are labels or tags placed before function
 definitions and prefixed with `@`; they modify function definitions,
 giving them some extra behaviour or properties.
-
 
 ## Universal functions in Numba
 
@@ -394,7 +372,6 @@ processor cores available, then using this parallel implementation would
 make more sense than Numpy. (If you are running your code on a High-
 Performance Computing (HPC) system then this is important!)
 
-
 > ## Another ufunc
 >
 > Try creating a ufunc to calculate the discriminant of a quadratic
@@ -424,8 +401,10 @@ Performance Computing (HPC) system then this is important!)
 
 ## Gufuncs
 
-The ufuncs wrote above act on all elements of an array in the same way, broadcasting like a scalar. Sometimes, however, we would like a function that operates on more than one array element at once. Is
-there a way we can do this, but still keep the ability to broadcast to larger array shapes?
+(Adapted from the
+[Scipy 2017 Numba tutorial](https://github.com/gforsyth/numba_tutorial_scipy2017/blob/master/notebooks/07.Make.your.own.ufuncs.ipynb))
+
+The ufuncs written above act on all elements of an array in the same way, broadcasting like a scalar. Sometimes, however, we would like a function that operates on more than one array element at once. Is there a way we can do this, but still keep the ability to broadcast to larger array shapes?
 
 There is; such a function is called a *generalised ufunc*, and Numba
 lets us define these using the `guvectorize` decorator.
@@ -502,20 +481,15 @@ uninitialised variable in C-like languages).
 
 ## Numba jit
 
-While this is starting to diverge from "performant Numpy" towards
-"performant Python" in general, it's useful to see how Numba can speed
-up things that don't work element-wise at all.
-
-## First example of Numba
-
-(Adapted from the
-[5-minute introduction to Numba](https://numba.pydata.org/numba-doc/latest/user/5minguide.html).)
+It is also useful to see how Numba can speed up things that don't work element-wise at all.
+It provides the @jit decorator to compile functions and can parallelize loops using prange for NumPy arrays.
 
 ~~~
+%env NUMBA_NUM_THREADS=4
 from numba import jit
 import numpy as np
 
-@jit(nopython=True)
+@jit(nopython=True, parallel=True)
 def a_plus_tr_tanh_a(a):
     trace = 0
     for i in range(a.shape[0]):
@@ -530,6 +504,9 @@ Some things to note about this function:
   in "no Python" mode (i.e. if it can't work out how to compile this
   function entirely to machine code, it should give an error rather than
   partially using Python)
+* The decorator `@jit(parallel=True)` tells Numba to compile to run with multiple threads.
+  Like previously, we need to control this threads count at run-time using the
+  `NUMBA_NUM_THREADS` environment variable.
 * The function accepts a Numpy array; Numba performs better with Numpy
   arrays than with e.g. Pandas dataframes or objects from  other libraries.
 * The array is operated on with Numpy functions (`np.tanh`) and broadcast
@@ -550,105 +527,23 @@ a_plus_tr_tanh_a(a)
 {: .language-python}
 
 ~~~
-12.1 µs ± 26.4 ns per loop (mean ± std. dev. of 7 runs, 100000 loops each)
-~~~
-{: .output}
-
-How does this compare with the naive version? Commenting out the
-`@jit` decorator in `first_numba.py` an re-running the same timing
-command:
-
-~~~
-443 µs ± 2.11 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)
-~~~
-{: .output}
-
-This is a 36x speedup&mdash;not too shabby!
-
-It might be possible to rearrange this function so that it uses
-pure Numpy operations throughout rather than a regular Python loop,
-but in many cases it either isn't possible or significantly reduces
-the readability of the code. In these cases, Numba can provide an
-alternative route to a comparable level of performance, with a
-lot less work, and more readable code at the end of it.
-
-## Getting parallel
-
-The `@jit` decorator accepts a relatively wide range of parameters.
-One is `parallel`, which tells Numba to try and optimise the function
-to run with multiple threads. Like previously, we need to control this
-threads count at run-time using the `NUMBA_NUM_THREADS`
-environment variable.
-
-Restarting the kernel and setting this variable:
-
-~~~
-%env NUMBA_NUM_THREADS=4
-from numba import jit
-import numpy as np
-
-@jit(nopython=True, parallel=True)
-def a_plus_tr_tanh_a(a):
-    trace = 0
-    for i in range(a.shape[0]):
-        trace += np.tanh(a[i, i])
-    return a + trace
-
-
-a = np.arange(10_000).reshape((100, 100))
-a_plus_tr_tanh_a(a)
-%timeit a_plus_tr_tanh_a(a)
-~~~
-{: .language-python}
-
-~~~
 20.9 µs ± 242 ns per loop (mean ± std. dev. of 7 runs, 10000 loops each)
 ~~~
 {: .output}
 
-Parallelism has successfully multiplied our run time by 4. This is
-because when running in parallel, Numba (in fact, the OpenMP runtime)
-needs to spin up a team of threads to run the code, and then keep
-them synchronised. This takes a finite amount of time, so on very
-small functions like the one we've run here it takes longer than the
-time saved by running in parallel.
 
-> ## Larger problem size
+> ## Compare Performance
 >
-> Retry the example above with a matrix size of $$1000 \times 1000$
-> instead of $100 \times 100$, and see how the parallel and serial
-> performance compare.
-{: .challenge}
-
-
-## Programming GPUs
-
-We don't have time to look at this in detail, but an example of how
-GPUs can be programmed with Numba:
-
-~~~
-from numba import vectorize
-
-@vectorize(['int64(int64, int64)'], target='cuda')
-def add_ufunc(x, y):
-    return x + y
-~~~
-{: .language-python}
-
-More information on programming your GPU with Numba can be found at
-[this tutorial](https://github.com/ContinuumIO/gtc2018-numba) given at
-the GPU Technology Conference 2018.
-
-Remember, parallelization doesn't always lead to faster execution times, especially for small computations or when the overhead of parallelization outweighs the benefits. It's essential to profile your code and experiment with different approaches to find the most efficient solution for your specific use case.
-
-
-
-> ## Challenge
-> the challenge
->> ## Solution
->> the solution
+> Try to run the same code with the following changes:
+> 1. Run the naive version
+> 2. Run without parallelism
+> 3. Run with a larger matrix
+> Which one has the best results?
+>
+> > ## Solution
+> >
+> > Parallelization doesn't always lead to faster execution times, especially for small computations or when the overhead of parallelization outweighs the benefits. It's essential to profile your code and experiment with different approaches to find the most efficient solution for your specific use case.
 > {: .solution}
 {: .challenge}
-
 
 {% include links.md %}
