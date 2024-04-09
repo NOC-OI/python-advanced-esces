@@ -134,6 +134,16 @@ dataset['tempanomaly'].sel(time=slice("2000-01-15","2000-12-15"))
 One possible reason to using the sel method instead of the array based indexing is that sel supports variables with spaces in their names, while the dot notation doesn't.
 Although all these different styles can be used interchangbly, for the purpose of providing readable code it is helpful to be consistent and choose one style throughout our program.
 
+> ## Slicing exercise
+> Write a slicing command to get every other month from the temperature anomaly dataset.
+>> ## Solution
+>> ~~~
+>> dataset['tempanomaly']['time'][:12:2]
+>> ~~~
+>> {: .language-python}
+> {: .solution}
+{: .challenge}
+
 ### Nearest Neighbour Lookups
 
 We have seen that we can lookup data for a specific date using the sel function, but these dates have to match one which is held within the dataset. For example if we try to lookup
@@ -152,6 +162,22 @@ dataset['tempanomaly'].sel(time='2000-01-01',method='nearest')
 {: .language-python}
 
 Note that this has actually selected the data for 2000-01-15, the nearest available to what we requested.
+
+We can specify a tolerance on the nearest neighbour matching so that we do not select dates beyond a certain threshold from the requested one. When using date based types
+we specify the tolerance with the suffix `d` for days or `w` for weeks.
+
+~~~
+dataset['tempanomaly'].sel(time='2000-01-10',method='nearest',tolerance="1d")
+~~~
+{: .language-python}
+
+The above will fail because it is more than 1 day from the nearest available data. But changing it to 1w should work.
+
+~~~
+dataset['tempanomaly'].sel(time='2000-01-10',method='nearest',tolerance="1w")
+~~~
+{: .language-python}
+
 
 
 # Plotting Xarray data
@@ -315,7 +341,7 @@ We can also operate on slices of an array, if we wanted to calculate the mean te
 then we could do:
 
 ~~~
-transect_mean = dataset['tempanomaly'].sel('2000-01-15',lon=slice(-70,-17),lat=23).mean()
+transect_mean = dataset['tempanomaly'].sel(time='2000-01-15',lon=slice(-70,-17),lat=23).mean()
 print(transect_mean.values)
 ~~~
 {: .language-python}
