@@ -22,6 +22,7 @@ keypoints:
 - "Numba ufuncs let us write arbitary functions for Numba to use."
 ---
 
+This episode is based in material from Ed Bennett's [Performant Numpy lesson](https://github.com/edbennett/performant-numpy)
 
 # Measuring Code Performance
 
