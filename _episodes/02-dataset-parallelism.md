@@ -179,7 +179,7 @@ Seq     Host    Starttime       JobRuntime      Send    Receive Exitval Signal  
 >
 > Run this for the years 2000 to 2023 as a serial job with the commands:
 > ~~~
-> time for year in seq 2000 2023 ; do python plot_tempanomaly.py gistemp1200-21c.nc --start $year --end $[$year+1] ; done
+> time for year in $(seq 2000 2023) ; do python plot_tempanomaly.py gistemp1200-21c.nc --start $year --end $[$year+1] ; done
 > ~~~
 > {: .language-bash}
 >
@@ -188,6 +188,20 @@ Seq     Host    Starttime       JobRuntime      Send    Receive Exitval Signal  
 > time parallel python plot_tempanomaly.py gistemp1200-21c.nc --start {1} --end {2} ::: $(seq 2000 2023) :::+ $(seq 2001 2024)
 > ~~~
 > {: .language-bash}
+>
+> Note that if you are using parallel from outside of Jupyter lab then you running parallel decativates your conda/mamba environment. The easiest solution to this is to
+> create a wrapper shell script that runs the python command. Type the following into your favourite text editor and save it as `plot_tempanomaly.sh`.
+> ~~~
+> #!/bin/bash
+> python plot_tempanomaly.py $1 --start $2 --end $3
+> ~~~
+> {: .language-bash}
+>
+> ~~~
+> time parallel bash plot_tempanomaly.sh gistemp1200-21c.nc {1} {2} ::: $(seq 2000 2023) :::+ $(seq 2001 2024)
+> ~~~
+> {: .language-bash}
+>
 >
 > Compare the runtimes of the parallel and serial versions.
 > Try adding the joblog option and examining how many jobs launched at once.
