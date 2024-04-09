@@ -11,7 +11,7 @@ objectives:
 - "Understand the benefits of using Numpy array operations instead of loops."
 - "Remember that single instruction, multiple data instrcutions can speed up certain operations that have been optimised for their use."
 - "Understand that Numba is using Just-in-time compilation and vectorisation extensions."
-- "Understand when to use ufuncs and gufuncs to write functions that are compatible with Numba."
+- "Understand when to use ufuncs to write functions that are compatible with Numba."
 keypoints:
 - "We can measure how long a Jupyter cell takes to run with %%time or %%timeit magics."
 - "We can use a profiler to measure how long each line of code in a function takes."
@@ -19,20 +19,22 @@ keypoints:
 - "Numpy can perform operations to whole arrays, this will perform faster than using for loops."
 - "Numba can replace some Numpy operations with just in time compilation that is even faster."
 - "One way numba achieves higher performance is to use vectorisation extensions of some GPUs that process multiple pieces of data in one instruction."
-- "Numba ufuncs and gufuncs let use write arbitary functions for Numba to use."
+- "Numba ufuncs let us write arbitary functions for Numba to use."
 ---
-# Measure Code Performance
+
+
+# Measuring Code Performance
 
 There are several ways to measure the performance of your code.
 
 ## Timeit
 
-We can get a reasonable
-picture of the performance of individual functions and code snippets
-by using the `timeit` module.
+We can get a reasonable picture of the performance of individual functions and code snippets
+by using the `timeit` module. `timeit` will run the code multiple times and take an average runtime.
 
-In Jupyter, `timeit` is provided by line and cell magics. The line
-magic:
+In Jupyter, `timeit` is provided by line and cell magics. A magic is some special extra helper features added to Python. 
+
+The line magic:
 
 ~~~
 %timeit result = some_function(argument1, argument2)
@@ -42,7 +44,6 @@ magic:
 
 will report the time taken to perform the operation on the same line
 as the `%timeit` magic. Meanwhile, the cell magic
-
 ~~~
 %%timeit
 
@@ -70,6 +71,9 @@ $ python -m timeit --setup='import numpy; x = numpy.arange(1000)' 'x ** 2'
 Notice the `--setup` argument, since you don't usually want to time
 how long it takes to import a library, only the operations that you're
 going to be doing a lot.
+
+## Time
+There is another magic we can use that is simply called `time`. This works very similarly to `timeit` but will only run the code once instead of multiple times.
 
 ## Profiling
 
@@ -112,7 +116,8 @@ and optimize it as needed.
 
 # Numpy whole array operations
 
-Numpy whole array operations refer to performing operations on entire arrays at once, rather than looping through individual[ elements. This approach leverages the ](https://github.com/NOC-OI/python-advanced-esces/edit/gh-pages/_episodes/07-)optimized C and Fortran implementations underlying NumPy, leading to significantly faster computations compared to traditional Python loops.
+Numpy whole array operations refer to performing operations on entire arrays at once, rather than looping through individual elements. 
+This approach leverages the optimized C and Fortran implementations underlying NumPy, leading to significantly faster computations compared to traditional Python loops.
 
 Let's illustrate this with an example:
 
@@ -151,7 +156,8 @@ cProfile.run("numpy_multiply(arr)")
 ~~~
 {: .language-python}
 
-In this example, `traditional_multiply` uses nested loops to multiply each element of the array by 2, while `numpy_multiply` performs the same operation using a single NumPy operation. When comparing the execution times using `%timeit`, you'll likely observe that `numpy_multiply` is significantly faster.
+In this example, `traditional_multiply` uses nested loops to multiply each element of the array by 2, while `numpy_multiply` performs the same operation using a single NumPy 
+operation. When comparing the execution times using `%timeit`, you'll likely observe that `numpy_multiply` is significantly faster.
 
 > The reason why the Numpy operation is faster than the traditional loop-based approach is because:
 > 1. **Vectorization**: Numpy operations are vectorized, meaning they are applied element-wise to the entire array at once. This allows for efficient parallelization and takes advantage of optimized low-level implementations.
@@ -316,7 +322,7 @@ Numba: 24.9 ms ± 134 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)
 ~~~
 {: .output}
 
-Numpy has parallelised this, but isn't icnredibly efficient - it's used $$7.84 \times 4 = 31.4$$ core-milliseconds rather than 19. But
+Numpy has parallelised this, but isn't incredibly efficient - it's used $$7.84 \times 4 = 31.4$$ core-milliseconds rather than 19. But
 Numba can also parallelise. If we alter our call to `vectorize`, we
 can pass the keyword argument `target='parallel'`. However, when we do
 this, we also need to tell Numba in advance what kind of variables it
@@ -398,86 +404,6 @@ Performance Computing (HPC) system then this is important!)
 > > use smaller intermediary values.
 > {: .solution}
 {: .challenge}
-
-## Gufuncs
-
-(Adapted from the
-[Scipy 2017 Numba tutorial](https://github.com/gforsyth/numba_tutorial_scipy2017/blob/master/notebooks/07.Make.your.own.ufuncs.ipynb))
-
-The ufuncs written above act on all elements of an array in the same way, broadcasting like a scalar. Sometimes, however, we would like a function that operates on more than one array element at once. Is there a way we can do this, but still keep the ability to broadcast to larger array shapes?
-
-There is; such a function is called a *generalised ufunc*, and Numba
-lets us define these using the `guvectorize` decorator.
-
-With great power, however, comes great responsibility. The increased
-flexibility of generalised ufuncs means that we need to give Numba
-more information to allow it to work. For example,
-
-~~~
-import numpy as np
-from numba import guvectorize
-
-@guvectorize('int64[:], int64, int64[:]', '(n),()->(n)')
-def g(x, y, result):
-    for i in range(x.shape[0]):
-        result[i] = x[i] + y
-~~~
-{: .language-python}
-
-Now, this could be done with a simple broadcast, but it demonstrates a
-point. We have had to make two declarations within the call to
-`guvectorize`: the first resembles what we saw for parallel `ufuncs`;
-we need to tell Numba what data types (and dimensionalities) we expect
-to receive and output. The second declaration tells Numba what
-dimensions are shared between inputs and outputs. In this case, we
-expect the array (or array slice) `x` to be the same size as the
-output array `result`, while `y` is a scalar number. Similarly to
-`einsum`, more letters indicate more array dimensions.
-
-The function body has another change from the scalar `ufunc` case,
-too. We no longer have a `return` statement at the end; instead, we
-have an explicitly-passed `result` variable that we edit. This is
-necessary, as otherwise we would have to construct a data
-structure to hold the output, since the whole point of generalised
-ufuncs was to avoid being restricted to scalar outputs.
-
-We can test this:
-
-~~~
-x = np.arange(10)
-result = np.zeros_like(x)
-result = g(x, 5, result)
-print(result)
-~~~
-{: .language-python}
-
-~~~
-[ 5  6  7  8  9 10 11 12 13 14]
-~~~
-{: .output}
-
-What happens if we try and use this like a more typical Numpy
-function, which uses a return value rather than taking the output as
-a parameter?
-
-~~~
-res = g(x, 5)
-print(res)
-~~~
-{: .language-python}
-
-~~~
-[ 5  6  7  8  9 10 11 12 13 14]
-~~~
-{: .output}
-
-This works, and is useful in cases where you are replacing an existing
-function and want to maintain the existing interface (rather than
-having to modify every calling point). However, it can be dangerous:
-this effectively uses `np.empty` to declare the output array, so
-unless you define all elements of the output array within the
-function, then the behaviour is unpredictable (the same as using an
-uninitialised variable in C-like languages).
 
 ## Numba jit
 
