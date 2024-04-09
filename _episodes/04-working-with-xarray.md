@@ -76,14 +76,14 @@ print(dataset['tempanomaly']
 Or a single dimension of the variable with:
 
 ~~~
-print(dataset['tempanomaly']['time']
+print(dataset['tempanomaly']['time'])
 ~~~
 {: .language-python}
 
 Individual elements of the time data can be accessed with an additional dimension:
 
 ~~~
-print(dataset['tempanomaly']['time'][0]
+print(dataset['tempanomaly']['time'][0])
 ~~~
 {: .language-python}
 
