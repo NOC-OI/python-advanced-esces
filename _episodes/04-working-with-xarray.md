@@ -1,6 +1,6 @@
 ---
 title: "Working with data in Xarray"
-teaching: 40
+teaching: 60
 exercises: 30
 questions:
 - "How do I load data with Xarray?"
@@ -14,14 +14,13 @@ objectives:
 - "Apply Xarray operations to load, manipulate and visualise data"
 keypoints:
 - "Xarray can load NetCDF files"
-- "We can address dimensions by their name"
+- "We can address dimensions by their name using the `.dimensionname`, `['dimensionname]` or `sel(dimensionname)` syntax."
 - "With lazy loading data is only loaded into memory when it is requested"
-- "We can apply mathematical operations to the whole (or part) of the array, this is more efficient than using a for loop"
-- "We can also apply custom functions to operate on the whole or part of the array"
-- "Xarray has many useful built in operations it can perform such as interpolating and downsampling"
-- "Broadcasting"
-- "time series"
-- "visualising"
+- "We can apply mathematical operations to the whole (or part) of the array, this is more efficient than using a for loop."
+- "We can also apply custom functions to operate on the whole or part of the array."
+- "We can plot data from Xarray invoking matplotlib."
+- "Hvplot can plot interactive graphs."
+- "Xarray has many useful built in operations it can perform such as resampling, coarsening and grouping."
 ---
 
 # Introducing Xarray
@@ -197,10 +196,6 @@ dataset['tempanomaly'].sel(time="2010-09-15").plot.hist()
 {: .language-python}
 
 
-## Facetting
-
-Should this be included?
-
 
 ## Interactive Plotting with Hvplot
 
@@ -299,7 +294,6 @@ dataset_clipped = xr.apply_ufunc(numpy.clip,dataset['tempanomaly'],-2,2)
 ~~~
 {: .language-python}
 
-### Broadcasting
 
 
 ## Reduce Operations
@@ -363,6 +357,7 @@ dataset['tempanomaly'].where(dataset['tempanomaly'].lon > 0)
 > 2. Use there where function to remove any data above the 95th percentile.
 > 3. Multiply all remaining values by a correction factor of 0.90.
 > 4. Plot both the original and corrected version of the dataset for the first day in the dataset (2000-01-15).
+>
 > > ## Solution
 > > ~~~
 > > threshold = dataset['tempanomaly'].quantile(0.95)
@@ -546,7 +541,7 @@ dataset_corrected.to_netcdf("corrected.nc")
 > > sst_global.plot()
 > > sst_global.to_netcdf("global-mean-sst.nc")
 > > ~~~
-> > {. language-python}
+> > {: .language-python}
 > {: .solution}
 {: .challenge}
 

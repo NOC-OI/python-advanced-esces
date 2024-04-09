@@ -218,8 +218,8 @@ ssh2[0,0,0]
 >> result.plot()
 >> cluster.shutdown()
 >> ~~~
->> Optimal workers is probably 10 and execution should take around 22 seconds. Single threaded execution time is 57 seconds.
 >> {: .language-python}
+>> Optimal workers is probably 10 and execution should take around 22 seconds. Single threaded execution time is 57 seconds.
 > {: .solution}
 {: .challenge}
 

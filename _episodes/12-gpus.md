@@ -21,12 +21,22 @@ keypoints:
 
 # What are GPUs and why should we use them?
 
+- GPUs are Graphics Processing Units, they have large numbers of very simple processing cores and are suited to some parallel tasks like machine learning and array operations
+- GPUs used to have to be programmed using specialised languages/libraries such as Cuda (NVIDIA proprietary) or OpenCL (cross platform and open source). 
+- These are very low level systems that require the programmer to worry about things like moving data to/from GPU memory. 
+- Today many higher level libraries can use GPUs reducing our need to learn Cuda or OpenCL.
+
 ## How can you access a GPU if your PC doesn't have one
 
+- Many laptops and desktops won't have very powerful GPUs, instead we'll want to use HPC or Cloud systems to access a GPU.
+- Google Colab offers a Jupyter notebook interface with GPUs for free, but the GPUs aren't very powerful.
+
 # Using GPUs with Numba
+- Numba can use GPUs with minor modifications to the code.
+
 
 # GPU replacements for popular libraries
-
+- NVIDIA have drop in replacements for Pandas, Numpy and SciKit learn that are GPU accelerated.
 
 
 > ## Challenge
