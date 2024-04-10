@@ -112,7 +112,7 @@ axis.gridlines(draw_labels=True)
 ~~~
 {: .language-python}
 
-If we'd like the gridlines at a different position we can specify these with Python lists in the `x_loc` and `y_loc` parameters. For example
+If we'd like the gridlines at a different position we can specify these with Python lists in the `xlocs` and `ylocs` parameters. For example
 
 ~~~
 fig = plt.figure(figsize=(10,5))
@@ -126,7 +126,7 @@ axis.gridlines(draw_labels=True,x_loc=[-180,-90,0,90,180])
 A more concise way to do this is to use Numpy's `linspace` function which creates an array of evenly spaced elements, this takes a start, end and number of elements parameter for example:
 
 ~~~
-axis.gridlines(draw_labels=True,x_loc=np.linspace(-180,180,5))
+axis.gridlines(draw_labels=True,xlocs=np.linspace(-180,180,5))
 ~~~
 {: .language-python}
 
