@@ -380,7 +380,7 @@ dataset['tempanomaly'].where(dataset['tempanomaly'].lon > 0)
 > ## Challenge
 > Using map/reduce operations and the where function to do the following on the example dataset:
 > 1. Calculate the 95th percentile of the data set using the `quantile` function in Xarray.
-> 2. Use there where function to remove any data above the 95th percentile.
+> 2. Use the where function to remove any data above the 95th percentile.
 > 3. Multiply all remaining values by a correction factor of 0.90.
 > 4. Plot both the original and corrected version of the dataset for the first day in the dataset (2000-01-15).
 >
