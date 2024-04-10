@@ -224,6 +224,23 @@ ssh2[0,0,0]
 {: .challenge}
 
 
+# Intake Catalogues
+
+It is a common problem that envrionmental scientists will need to work with datasets that span across many files. There is a common practice with larger datasets stored in
+Zarr or NetCDF formats to split them into multiple files with either one variable per file or one time period per file. Once we have more than a few files in our dataset 
+keeping the correct filenames or URLs can become more difficult, especially if those names change or data gets relocated. Intake catalogues solve this problem by storing 
+a catalogue of our dataset and all the files contained within it.
+
+To open a catalogue we call the `open_catalog` function in the intake library. By converting the response of this to a Python list we can find the names of all of the datasets
+in the catalogue.
+
+~~~
+import intake
+xcat = intake.open_catalog('https://raw.githubusercontent.com/intake/intake-xarray/master/examples/catalog.yml')
+list(xcat)
+~~~
+{: .langauge-python}
+
 
 
 {% include links.md %}
