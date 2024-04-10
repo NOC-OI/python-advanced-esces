@@ -499,7 +499,7 @@ import matplotlib.pyplot as plt
 rolling = dataset['tempanomaly'].rolling(time=12, center=True)
 ds_rolling = rolling.mean()
 dataset.tempanomaly.sel(lon=-3, lat=53).plot(label="monthly anom")
-ds_rolling.sel(lon=31,lat=51).plot(label="12 month rolling mean")
+ds_rolling.sel(lon=-3,lat=53).plot(label="12 month rolling mean")
 plt.legend()
 ~~~
 {: .language-python}
