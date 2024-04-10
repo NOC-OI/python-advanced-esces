@@ -427,7 +427,7 @@ and call it's `legend` function.
 ~~~
 import matplotlib.pyplot as plt
 dataset['tempanomaly'].sel(lat=53,lon=-3).plot(label="Original Monthly Data")
-resampled.mean.plot(label="Resampled Annual Data",marker="o")
+resampled.mean().plot(label="Resampled Annual Data",marker="o")
 plt.legend()
 ~~~
 {: .language-python}
