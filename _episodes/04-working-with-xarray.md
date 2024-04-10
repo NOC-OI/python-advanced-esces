@@ -564,7 +564,7 @@ dataset_corrected.to_netcdf("corrected.nc")
 > > sst_20c = sst.sel(time=slice("1970-01-01","1999-12-31"))
 > > sst_annual = sst.resample(time="1YE").mean()
 > > sst_global = sst_annual.coarsen(lat=89,lon=180).mean()
-> > sst_global.plot()
+> > sst_global['sst'].plot()
 > > sst_global.to_netcdf("global-mean-sst.nc")
 > > ~~~
 > > {: .language-python}
