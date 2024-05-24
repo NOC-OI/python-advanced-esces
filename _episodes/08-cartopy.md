@@ -133,9 +133,10 @@ axis.gridlines(draw_labels=True,xlocs=np.linspace(-180,180,5))
 # Adding Country/Region boundaries
 
 Cartopy has many common map features including coastlines, lakes, rivers, country boundaries and state/region boundaries that it can draw. These are all available in the `cartopy.feature`
-library and can be added using the `add_features` function on a subplot axis. 
+library and can be added using the `add_features` function on a subplot axis.
 
 ~~~
+import cartopy.feature as cfeature
 fig = plt.figure(figsize=(10,5))
 axis = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
 dataset.tempanomaly.sel(time="2000-01-15").plot(ax = axis, transform=ccrs.PlateCarree())
@@ -163,6 +164,31 @@ axis.add_feature(cfeature.LAKES)
 axis.add_feature(cfeature.RIVERS)
 ~~~
 {: .language-python}
+
+> ## Downloading boundary data manually
+>
+> If you want to download the boundary data yourself (perhaps if you are going to be offline later and want to plot some maps) then you can do this from the Natural Earth website or
+> by using a wget or curl command from your terminal. Download the following files:
+> https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_coastline.zip
+> https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_lakes.zip
+> https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_rivers_lake_centerlines.zip
+> https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip
+> Unzip these and place the coastlines, lakes and rivers files in ~/.local/share/cartopy/shapefiles/natural_earth/physical
+> Place the boundaries in ~/.local/share/cartopy/shapefiles/natural_earth/cultural
+> Here's the commands to do all of this:
+> ~~~
+> wget https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_coastline.zip https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_lakes.zip https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_rivers_lake_centerlines.zip https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip
+> mkdir -p ~/.local/share/cartopy/shapefiles/natural_earth/cultural
+> mkdir -p ~/.local/share/cartopy/shapefiles/natural_earth/physical
+> cd ~/.local/share/cartopy/shapefiles/natural_earth/cultural
+> conda run -n esces unzip ~/ne_110m_admin_0_boundary_lines_land.zip
+> cd ../physical
+> conda run -n esces unzip ~/ne_110m_coastline.zip
+> conda run -n esces unzip ~/ne_110m_lakes.zip
+> conda run -n esces unzip ~/ne_110m_rivers_lake_centerlines.zip
+> ~~~
+> {: .language-bash}
+{: .callout}
 
 > ## Challenge
 > The [`cartopy.feature.NaturalEarthFeature`](https://scitools.org.uk/cartopy/docs/latest/reference/generated/cartopy.feature.NaturalEarthFeature.html) library allows access to a number
