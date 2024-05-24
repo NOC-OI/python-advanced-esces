@@ -1,15 +1,19 @@
 ---
 title: "Introduction"
-teaching: 15
-exercises: 10
+teaching: 20
+exercises: 15
 questions:
+- "What are some of the common computing terms that I might encounter?"
 - "How can I use Python to work with large datasets?"
 - "How do I connect to a high performance computing system to run my code?"
 objectives:
+- "To understand common computing terms around using HPC and Jupyter systems."
+- "To understand what JASMIN is and the services it provides."
 - "To have the lesson conda environment installed and running."
 - "To be able to launch a JupyterLab instance with the lesson's data and code present."
 - "To be aware of the key libraries used in this lesson (Xarray, Numba, Dask, Intake)."
 keypoints:
+- "Jupyter Lab is a system for interactive notebooks that can run Python code, these can be either on own computer or a remote computer."
 - "Python can scale to using large datasets with the Xarray library."
 - "Python can parallelise computation with Dask or Numba."
 - "NetCDF format is useful for large data structures as it is self-documenting and handles multiple dimensions."
@@ -40,9 +44,115 @@ In this lesson we will look at a few tools to help you work with big data and to
 * Zarr
 * Intake
 
-## Connecting to a JupyterLab/notebook service
 
-We will be using the Notebook service on the JASMIN system for this workshop. This will open a Jupyter notebook in your web browser, 
+## Jargon Busting
+
+### CPU
+
+At the heart of every computer is the CPU or Central Processing Unit. This takes the form of a microchip and typically the CPU is the biggest microchip in the computer. 
+The CPU can be thought of as the "brain" of the computer and is what ultimately runs all of our software and carries out any operations we perform on our data. 
+
+### Core
+
+Until around 2010 most CPUs had a single processing core and could only do one thing at a time. They gave the illusion of doing multiple things at once by rapidly switching from one
+task to another. A few higher end computers would have multiple CPUs and could do 2/4/8 things at once if they had 2/4/8 CPUs. Since around 2010 most CPUs have multiple cores, which
+is effectively putting multiple CPUs onto a single chip. By having multiple cores modern computers can perform multiple tasks simultaneously. 
+
+### Node/Cluster
+
+A single computer in a group of computers known as a cluster is often called a "node". A cluster allows us to run large programs over multiple computers with data being exchanged over
+a high speed network called an interconnect. 
+
+### Process
+
+A process is a single running copy of a computer program. If for example launch a (simple) Python program then it will create one Python process to run this. We can see a list of 
+processes running on a Linux computer with the `ps` or `top` command or on windows using the Task Manager. The computer's operating system will decide which core should run which process
+and will rapidly switch between all the running processes to ensure that they all have a chance to do some work. If a process is waiting on input from the user or for data to arrive
+from a hardware device such as a disk or network then it might give up its turn to do any work until the input/data arrives. The operating system isolates each process from the others, 
+each will have its own memory allocated and won't be able to read or write data to another process's memory.
+
+### Thread
+
+A thread is a way of having multiple things happening simultaneously inside one process. Unlike processes, threads can access each other's memory. In multicore systems each thread
+might run on a different core. Some CPUs also have a feature called Hyper Threading where for every core they have some additional parts of a core, this can help run some multithreaded
+applications a little bit faster while only requiring a small amount of extra ciricuitry in the CPU. Some programs which tell us about the specifications of a CPU will mention how many
+threads a CPU has, in Hyper Threaded systems this will be double the number of cores, in non-Hyper Threaded systems it will be the same as the number of cores.
+
+### Parallel Processing
+
+Parallel Processing is where a task is split across multiple processing cores to run different parts of it simultaneously and make it go faster.
+This can be acheived by using multiple processes and/or multiple threads. Bigger and more complex tasks might also be split across several computers.
+
+### Computer memory
+
+There are two main types of computer memory, RAM or volatile storage and disk or non-volatile storage.
+
+#### RAM
+
+RAM or Random Access Memory is the computer's short term memory, any program which is running must be loaded into RAM as is any data which that program needs. When the computer is 
+switched off the contents of the RAM are lost. RAM is very fast to access and the "Random" in the name means it be both read from and written to. A typical modern computer might have
+a few gigabytes (a few billion characters) worth of RAM.
+
+#### Storage
+
+Disk or storage or non-volatile storage is where computers store things for longer term keeping. Traditionally this was on a hard disk that had spinning platters which could be magnetised
+(or before that on removable floppy disks which also magnetise a spinning disk). Many modern computers use Solid State Disks (SSDs) which are faster and smaller than hard disks, 
+but they are still slower than RAM and are often more expensive. A typical modern computer might have a few hundred gigabytes to a few terabytes (trillion characters) worth of disk.
+
+HPC systems will often have very large arrays of many disks attached to them with hundreds of terabytes or even petabytes (1000 TB) between them. On some systems this will include
+a mix of slower hard disks and faster but less plentiful SSDs. Some systems also have tape storage which can hold large amounts of data but is very slow to access and is typically used
+for backup or archiving.
+
+### Server
+
+A server is a computer connected to a network (possibly including the internet) that accepts connections from client computers and provides them access to some kind of service,
+sends them some data or receives some data from them. Typically server computers have a large number of CPU cores, disk storage and/or RAM.
+
+### High Performance Computing
+
+High Performance Computing (sometimes called Super Computing) refers to large computing systems and clusters that are typically made up of many individual computers with a large number
+of cores between them. They're often used for research problems such as processing large environmental datasets or running large models and simulations such as climate models. High Performance
+Computing (HPC) systems are usually shared between many users. To ensure that one user doesn't take all the resources for themselves or prevent another users program from running 
+users are required to write a job description which tells the HPC what program they want to run and what resources it will need. This is then placed in a queue and will be run when
+the required resources are available. Typically when a job runs it will have a set of CPU cores dedicated to it and no other programs (apart from the operating system) will be able to 
+use those cores.
+
+![https://jasmin.ac.uk/assets/img/sections/section_content/14EC2458_JASMIN_2_computing_clus.2e16d0ba.fill-2000x1000.jpg](A picture of the JASMIN HPC system)
+
+### JASMIN
+
+[https://jasmin.ac.uk](JASMIN) is the UK's data analysis facility for data intensive environmental science. It combines several computing services together including:
+
+* High Performance Computing system called Lotus with over 19,000 processing cores and 300 nodes.
+* Virtual machines 
+* Jupyter Notebooks service
+* Data Storage on both disk and tape
+* Moderate sized shared "sci" servers, with between 8 and 48 CPU cores and 32G to 1TB of RAM
+
+![https://help.jasmin.ac.uk/img/docs/lotus-overview/file-QPxolXD1Tu-1400x1587.webp](An image illustrating the JASMIN system)
+
+
+### SSH
+
+SSH or Secure SHell is a program for connecting to and running commands on another computer over a local network or the internet. As the "secure" part of the name implies, SSH encrypts
+all the data that it sends so that anybody intercepting the data won't be able to read it. SSH is used to support accessing the command line interface of another computer, but it
+can also "tunnel" other data through the SSH connection and this can include the output of graphical programs, allowing us to run graphical programs on a remote computer.
+
+SSH has two accompanying utilities for copying files, called SCP (Secure Copy) and SFTP (Secure File Transfer Protocol) that allow us to use SSH to copy files to or from a remote computer.
+
+### Jupyter Notebooks
+
+Jupyter Notebooks are an interactive way to run Python (and Julia or R) in the web browser. Jupyter Lab is the program which runs a Jupyter server that we can connect to. We can run
+Jupyter Lab on our own computer by downloading Anaconda and running Jupyter Lab via the Anaconda Navigator, when run in this way any Python code written in the Notebook will run on our
+own computer. We can also use a service called a Jupyter Hub run by somebody else, usually on a server computer. When run in this way any code written in the Notebook will run on
+the server. This means we can take advantage of the server having more memory, CPU cores, storage or large datasets that aren't on our computer.
+
+Jupyter Lab also allows us to open a terminal and type in commands that run either on our computer or the Jupyter server. This can be helpful alternative to using SSH to connect to 
+a remote server as it requires no SSH client software to be installed.
+
+## Connecting to a JupyterLab/notebooks service
+
+We will be using the Notebooks service on the JASMIN system for this workshop. This will open a Jupyter notebook in your web browser, 
 from this you can type in Python code and it will run on the JASMIN system. JASMIN is the UK's data analysis facility for environmental science 
 and co-locates both data storage and data processing facilities. It will also be possible to run much of the code in this workshop on your own 
 computer, but some of the larger examples will probably exceed the memory and processing power of your computer.
