@@ -120,7 +120,7 @@ so far none of the actual data has been transferred, we have done what is known 
 Let's try and read it by slicing out a small part of the file, we'll only get the `ssh` variable which is the sea surface height.
 
 ~~~
-ssh = ds['ssh'].sel(time_counter=slice(0,1),y=slice(500,700), x=slice(1000,1200))
+ssh = ds['ssh'].isel(time_counter=slice(0,1),y=slice(500,700), x=slice(1000,1200))
 ssh
 ~~~
 {: .language-python}
@@ -142,14 +142,14 @@ ssh_local = ssh.compute()
 
 We can now plot this by using:
 ~~~
-ssh2.plot()
+ssh_local.plot()
 ~~~
 {: .language-python}
 
 Or access some of the data:
 
 ~~~
-ssh2[0,0,0]
+ssh_local[0,0,0]
 ~~~
 {: .language-python}
 
