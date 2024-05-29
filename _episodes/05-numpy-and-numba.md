@@ -124,6 +124,7 @@ Let's illustrate this with an example:
 
 ~~~
 import numpy as np
+import cProfile
 
 # Traditional loop-based operation
 def traditional_multiply(arr):
