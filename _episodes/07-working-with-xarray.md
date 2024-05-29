@@ -69,7 +69,7 @@ The `open_dataset` function isn't restricuted to just opening NetCDF files and c
 To access an indivdual variable we can use an array style notation:
 
 ~~~
-print(dataset['tempanomaly']
+print(dataset['tempanomaly'])
 ~~~
 {: .language-python}
 
@@ -479,7 +479,7 @@ Once this is done we can plot a bar graph showing the counts in each bin.
 
 ~~~
 labels = []
-for i in range(0,len(counts['tempanomaly']):
+for i in range(0,len(counts['tempanomaly'])):
     print(counts['tempanomaly_bins'][i].values,counts['tempanomaly'][i].values)
     labels.append(str(counts['tempanomaly_bins'][i].values))
 
