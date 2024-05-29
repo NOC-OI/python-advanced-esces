@@ -380,11 +380,13 @@ processor cores available, then using this parallel implementation would
 make more sense than Numpy. (If you are running your code on a High-
 Performance Computing (HPC) system then this is important!)
 
-> ## Another ufunc
+> ## Creating your own ufunc
 >
 > Try creating a ufunc to calculate the discriminant of a quadratic
 > equation, $\Delta = b^2 - 4ac$. (For now, make it a serial
-> function.)
+> function by just using the @vectorize decorator *WITHOUT* the parallel target). 
+> 
+> Use the existing 1000x1000 arrays `a` and `b` as the input. Make `c` a single integer value. 
 >
 > Compare the timings with using Numpy whole-array operations in
 > serial. Do you see the results you might expect?
@@ -392,9 +394,16 @@ Performance Computing (HPC) system then this is important!)
 > > ## Solution
 > >
 > > ~~~
+> > # recalcuate a and b, just in case they were lost
+> > a = np.random.random((1000, 1000))
+> > b = np.random.random((1000, 1000))
 > > @vectorize
 > > def discriminant(a, b, c):
 > >     return b**2 - 4 * a * c
+> > c = 4
+> > %timeit dsicriminant(a, b, c)
+> > # numpy version for comparison
+> > %timeit b ** 2 - 4 * a * c
 > > ~~~
 > > {: .language-python}
 > >
@@ -407,10 +416,10 @@ Performance Computing (HPC) system then this is important!)
 > {: .solution}
 {: .challenge}
 
-## Numba jit
+## Numba Jit decorator
 
-It is also useful to see how Numba can speed up things that don't work element-wise at all.
-It provides the @jit decorator to compile functions and can parallelize loops using prange for NumPy arrays.
+Numba can also speed up things that don't work element-wise at all.
+Numba provides the @jit decorator to compile functions and can parallelize loops using prange for NumPy arrays.
 
 ~~~
 %env NUMBA_NUM_THREADS=4
@@ -419,7 +428,7 @@ import numpy as np
 
 @jit(nopython=True, parallel=True)
 def a_plus_tr_tanh_a(a):
-    trace = 0
+    trace = 0.0
     for i in range(a.shape[0]):
         trace += np.tanh(a[i, i])
     return a + trace
@@ -463,9 +472,9 @@ a_plus_tr_tanh_a(a)
 > ## Compare Performance
 >
 > Try to run the same code with the following changes:
-> 1. Run the naive version
-> 2. Run without parallelism
-> 3. Run with a larger matrix
+> 1. Run a version without any Numba Jit.
+> 2. Run without parallelism.
+> 3. Run with a larger matrix.
 > Which one has the best results?
 >
 > > ## Solution
