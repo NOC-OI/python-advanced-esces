@@ -154,6 +154,53 @@ Sometimes Dask can jam up and stop executing tasks. If this happens try the foll
 - Shutdown the client and restart it.
 - Shutdown the kernel of your notebook and rerun the notebook.
 
+## Using Dask with Xarray
+
+We previously used Xarray to load our temperature anomaly dataset from the Goddard Institute for Space Studies and performed some computational operations against it using Xarray. 
+Let's go and load it again, but this time we'll give an extra option to `open_dataset`, the `chunk` option which allows us to chunk the Xarray data to prepare it for computing with Dask.
+The `chunk` option expects a Python dictionary defining the chunk size for each of the dimensions, any dimension we don't want to chunk should be set to -1. For example:
+
+~~~
+import xarray as xr
+from dask.distributed import Client
+client = Client(n_workers=2, threads_per_worker=2, memory_limit='1GB')
+client
+ds = xr.open_dataset("gistemp1200-21c.nc", chunks={'lat':30, 'lon':30, 'time':-1})
+ds
+da = ds['tempanomaly']
+da
+~~~
+{: .language-python}
+
+Here we see that the Dask DataArray `da` is now chunked every 30 degrees of Latitude and Longitude. We can also specify automatic chunking by using `chunks={}`, but with such a small 
+dataset there won't be any chunking applied automatically.
+
+Any Xarray operations we now apply to the array will now use Dask. Let's repeat some of our earlier Xarray examples and compute a correction factor to the dataset, if we watch the 
+Dask dashboard we'll see some signs of activity. 
+
+~~~
+dataset_corrected = ds['tempanomaly'] * 1.1 - 1.0
+~~~
+{: .language-python}
+
+If we print `dataset_corrected` we'll see that it actually contains a Dask array. 
+
+~~~
+print(dataset_corrected)
+~~~
+{: .language-python}
+
+Dask is "lazy" and doesn't compute anything until we tell it to. To get Dask to trigger computing the result we need to call `.compute` on `dataset_corrected`.
+
+~~~
+result = dataset_corrected.compute()
+result
+~~~
+{: .language-python}
+
+
+
+
 # Low Level computation with Dask
 
 When higher level Dask functions are not sufficient for our needs we can write our own functions and request Dask executes these in parallel. Dask has two different strategies we can use
@@ -242,51 +289,6 @@ will be Dask future objects, if we display them we will see their status as to w
 
 The Dask documentation does not have much advice on when it is more appropriate to use Futures or Delayed functions. Some [general advice](https://dask.discourse.group/t/documentation-on-the-interplay-between-graphs-and-futures/269) 
 from the forums is to use Delayed functions and task graphs first, but to switch to futures for more complicated problems.
-
-## Using Dask with Xarray
-
-We previously used Xarray to load our temperature anomaly dataset from the Goddard Institute for Space Studies and performed some computational operations against it using Xarray. 
-Let's go and load it again, but this time we'll give an extra option to `open_dataset`, the `chunk` option which allows us to chunk the Xarray data to prepare it for computing with Dask.
-The `chunk` option expects a Python dictionary defining the chunk size for each of the dimensions, any dimension we don't want to chunk should be set to -1. For example:
-
-~~~
-import xarray as xr
-from dask.distributed import Client
-client = Client(n_workers=2, threads_per_worker=2, memory_limit='1GB')
-client
-ds = xr.open_dataset("gistemp1200-21c.nc", chunks={'lat':30, 'lon':30, 'time':-1})
-ds
-da = ds['tempanomaly']
-da
-~~~
-{: .language-python}
-
-Here we see that the Dask DataArray `da` is now chunked every 30 degrees of Latitude and Longitude. We can also specify automatic chunking by using `chunks={}`, but with such a small 
-dataset there won't be any chunking applied automatically.
-
-Any Xarray operations we now apply to the array will now use Dask. Let's repeat some of our earlier Xarray examples and compute a correction factor to the dataset, if we watch the 
-Dask dashboard we'll see some signs of activity. 
-
-~~~
-dataset_corrected = ds['tempanomaly'] * 1.1 - 1.0
-~~~
-{: .language-python}
-
-If we print `dataset_corrected` we'll see that it actually contains a Dask array. 
-
-~~~
-print(dataset_corrected)
-~~~
-{: .language-python}
-
-As we saw earlier on Dask is "lazy" and doesn't compute anything until we tell it to. To get Dask to trigger computing the result we need to call `.compute` on `dataset_corrected`.
-
-~~~
-result = dataset_corrected.compute()
-result
-~~~
-{: .language-python}
-
 
 
 # Using the JASMIN Dask gateway
