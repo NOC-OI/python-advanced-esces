@@ -401,7 +401,7 @@ Performance Computing (HPC) system then this is important!)
 > > def discriminant(a, b, c):
 > >     return b**2 - 4 * a * c
 > > c = 4
-> > %timeit dsicriminant(a, b, c)
+> > %timeit discriminant(a, b, c)
 > > # numpy version for comparison
 > > %timeit b ** 2 - 4 * a * c
 > > ~~~
