@@ -212,12 +212,13 @@ With futures tasks begin as soon as possible and immediately return a future obj
 To execute a function as a delayed task we must tag it with a `dask.delayed` decorator. Here is a simple example:
 
 ~~~
+import dask
 @dask.delayed
 def apply_correction(x):
    return x * 1.01 + 0.1
 
 import dask.array as da
-x = da.random.random(1_000_000), chunks=1000)
+x = da.random.random(1_000_000, chunks=1000)
 corrected = apply_correction(x)
 
 squared = corrected ** 2
@@ -241,7 +242,7 @@ def apply_correction(x):
    return x * 1.01 + 0.1
 
 import dask.array as da
-x = da.random.random(10_000), chunks=1000)
+x = da.random.random(10_000, chunks=1000)
 corrected = apply_correction(x)
 
 squared = corrected ** 2
@@ -268,7 +269,7 @@ def apply_correction(x):
 def square(x):
    return x ** 2
 
-x = da.random.random(10_000), chunks=1000)
+x = da.random.random(10_000, chunks=1000)
 corrected = client.submit(apply_correction, x)
 
 corrected
