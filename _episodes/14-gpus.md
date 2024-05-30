@@ -29,14 +29,37 @@ keypoints:
 ## How can you access a GPU if your PC doesn't have one
 
 - Many laptops and desktops won't have very powerful GPUs, instead we'll want to use HPC or Cloud systems to access a GPU.
-- Google Colab offers a Jupyter notebook interface with GPUs for free, but the GPUs aren't very powerful.
+- Google Colab (https://colab.research.google.com) offers a Jupyter notebook interface with GPUs for free, but the GPUs aren't very powerful.
 
-# Using GPUs with Numba
+# Using GPUs
+
+## Using GPUs with Numba
 - Numba can use GPUs with minor modifications to the code.
+- The key thing we need to do is use the `@cuda.jit` decorator.
+- The GPU has its own memory and we need to copy data to/from this.
 
 
-# GPU replacements for popular libraries
-- NVIDIA have drop in replacements for Pandas, Numpy and SciKit learn that are GPU accelerated.
+## GPU replacements for popular libraries
+- NVIDIA have drop in replacements for Pandas, Numpy and SciKit learn that are GPU accelerated. The replacemnt for Numpy is known as Cupy.
+
+The following will calculate the mean of 100,000,000 random numbers using Cupy.
+
+~~~
+import cupy as cp
+a = cp.random.random(100_000_000)
+%time cp.mean(a)
+~~~
+{: .language-python}
+
+For comparison let's do the same using numpy as see how long it takes.
+
+~~~
+import numpy as np
+a = np.random.random(100_000_000)
+%time np.mean(a)
+~~~
+{: .language-python}
+
 
 
 > ## Challenge
