@@ -172,7 +172,7 @@ This is defined by a YAML file that is downloaded alongside the course materials
 > ## Download the course material
 > Open a terminal and type:
 > ~~~
-> curl https://github.com/NOC-OI/python-advanced-esces/raw/gh-pages/data/data.tgz > data.tgz
+> curl https://raw.githubusercontent.com/NOC-OI/python-advanced-esces/gh-pages/data/data.tgz > data.tgz
 > tar xvf data.tgz
 > ~~~
 > {: .language-bash}
