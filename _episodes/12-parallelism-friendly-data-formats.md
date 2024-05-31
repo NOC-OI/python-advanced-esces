@@ -176,8 +176,7 @@ ssh_local[0,0,0]
 >> ds = xr.open_zarr("https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr")
 >> sst = ds['sst'].sel(time_counter=slice("1960-01-01","1961-12-31"))
 >> grouped_mean = sst.groupby("time_counter.year").mean()
->> coarsened_mean = grouped_mean.coarsen(x=len(sst.x),y=len(sst.y)).mean()
->> mean_sst = coarsend_mean.compute()
+>> mean_sst = grouped_mean.mean(dim=['y','x']) # this will take the mean across the specified dimensions
 >> ~~~
 >> {: .language-python}
 > {: .solution}
@@ -211,11 +210,11 @@ ssh_local[0,0,0]
 >> client
 >> 
 >> ds = xr.open_zarr("https://noc-msm-o.s3-ext.jc.rl.ac.uk/n06-coast-testing/n06_T.zarr",chunks={"time_counter" : 10})
->> sst = n06_T['sst'].sel(time_counter=slice("1960-01-01","1969-12-31"))
+>> sst = ds['sst'].sel(time_counter=slice("1960-01-01","1969-12-31"))
 >> # mean_sst = dataset.mean(dim=['lat','lon']) #better way to do this
 >> grouped_mean = sst.groupby("time_counter.year").mean()
->> coarsened_mean = grouped_mean.coarsen(x=len(sst.x),y=len(sst.y)).mean()
->> result = client.compute(coarsened_mean).result()
+>> mean_sst = grouped_mean.mean(dim=['y','x'])
+>> result = client.compute(mean_sst).result()
 >> result.plot()
 >> cluster.shutdown()
 >> ~~~
@@ -239,6 +238,20 @@ in the catalogue.
 import intake
 xcat = intake.open_catalog('https://raw.githubusercontent.com/intake/intake-xarray/master/examples/catalog.yml')
 list(xcat)
+~~~
+{: .langauge-python}
+
+Let's open the image example and use the skimage library to plot it. First you will need to install the skimage library with the following command in the terminal:
+
+~~~
+mamba install -n esces scikit-image
+~~~
+{: .langauge-bash}
+
+~~~
+from skimage.io import imshow
+image = xcat.image.read()
+imshow(image)
 ~~~
 {: .langauge-python}
 
