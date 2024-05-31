@@ -176,6 +176,7 @@ axis.add_feature(cfeature.RIVERS)
 > * [https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip](https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip)
 >
 > Unzip these and place the coastlines, lakes and rivers files in `~/.local/share/cartopy/shapefiles/natural_earth/physical`. 
+>
 > Place the boundaries in `~/.local/share/cartopy/shapefiles/natural_earth/cultural`
 >
 > Here's the commands to do all of this:
