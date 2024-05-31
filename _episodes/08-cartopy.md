@@ -169,12 +169,15 @@ axis.add_feature(cfeature.RIVERS)
 >
 > If you want to download the boundary data yourself (perhaps if you are going to be offline later and want to plot some maps) then you can do this from the Natural Earth website or
 > by using a wget or curl command from your terminal. Download the following files:
-> https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_coastline.zip
-> https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_lakes.zip
-> https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_rivers_lake_centerlines.zip
-> https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip
-> Unzip these and place the coastlines, lakes and rivers files in ~/.local/share/cartopy/shapefiles/natural_earth/physical
-> Place the boundaries in ~/.local/share/cartopy/shapefiles/natural_earth/cultural
+>
+> * [https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_coastline.zip](https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_coastline.zip)
+> * [https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_lakes.zip](https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_lakes.zip)
+> * [https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_rivers_lake_centerlines.zip](https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_rivers_lake_centerlines.zip)
+> * [https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip](https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip)
+>
+> Unzip these and place the coastlines, lakes and rivers files in `~/.local/share/cartopy/shapefiles/natural_earth/physical`. 
+> Place the boundaries in `~/.local/share/cartopy/shapefiles/natural_earth/cultural`
+>
 > Here's the commands to do all of this:
 > ~~~
 > wget https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_coastline.zip https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_lakes.zip https://naturalearth.s3.amazonaws.com/110m_physical/ne_110m_rivers_lake_centerlines.zip https://naturalearth.s3.amazonaws.com/110m_cultural/ne_110m_admin_0_boundary_lines_land.zip
