@@ -562,7 +562,7 @@ dataset_corrected.to_netcdf("corrected.nc")
 > > import xarray as xr
 > > sst = xr.tutorial.load_dataset("ersstv5")
 > > sst_20c = sst.sel(time=slice("1970-01-01","1999-12-31"))
-> > sst_annual = sst.resample(time="1YE").mean()
+> > sst_annual = sst_20c.resample(time="1YE").mean()
 > > sst_global = sst_annual.mean(dim=['lat','lon'])
 > > #sst_global = sst_annual.coarsen(lat=89,lon=180).mean() #another way to do the same as above
 > > sst_global['sst'].plot()
