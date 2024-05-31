@@ -32,3 +32,4 @@ dependencies:
 #  - nodejs
   - graphviz
   - python-graphviz
+  - unzip
